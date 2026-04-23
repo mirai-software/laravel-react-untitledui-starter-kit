@@ -29,9 +29,8 @@ export const CheckboxBase = ({
                 'relative flex size-4 shrink-0 cursor-pointer appearance-none items-center justify-center rounded bg-primary ring-1 ring-primary ring-inset',
                 size === 'md' && 'size-5 rounded-md',
                 (isSelected || isIndeterminate) &&
-                    'bg-brand-solid ring-bg-brand-solid',
-                isDisabled &&
-                    'cursor-not-allowed bg-disabled_subtle ring-disabled',
+                    'bg-brand-solid ring-brand-solid',
+                isDisabled && 'cursor-not-allowed opacity-50',
                 isFocusVisible &&
                     'outline-2 outline-offset-2 outline-focus-ring',
                 className,
@@ -45,7 +44,6 @@ export const CheckboxBase = ({
                     'pointer-events-none absolute h-3 w-2.5 text-fg-white opacity-0 transition-inherit-all',
                     size === 'md' && 'size-3.5',
                     isIndeterminate && 'opacity-100',
-                    isDisabled && 'text-fg-disabled_subtle',
                 )}
             >
                 <path
@@ -65,7 +63,6 @@ export const CheckboxBase = ({
                     'pointer-events-none absolute size-3 text-fg-white opacity-0 transition-inherit-all',
                     size === 'md' && 'size-3.5',
                     isSelected && !isIndeterminate && 'opacity-100',
-                    isDisabled && 'text-fg-disabled_subtle',
                 )}
             >
                 <path

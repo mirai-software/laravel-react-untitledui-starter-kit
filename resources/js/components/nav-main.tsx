@@ -20,7 +20,7 @@ export function NavMain({ items = [] }: { items: NavItem[] }) {
                     className={cx(
                         'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors',
                         isCurrentUrl(item.href)
-                            ? 'bg-bg-active text-text-primary'
+                            ? 'bg-bg-primary_hover text-text-primary'
                             : 'text-text-secondary hover:bg-bg-primary_hover hover:text-text-primary',
                     )}
                 >

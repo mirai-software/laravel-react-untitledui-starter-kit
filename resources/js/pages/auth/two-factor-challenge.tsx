@@ -1,12 +1,11 @@
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, setLayoutProps } from '@inertiajs/react';
 import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
-import { PinInput } from '@/components/base/pin-input/pin-input';
+import { PinInput } from '@/components/base/input/pin-input';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
-import AuthLayout from '@/layouts/auth-layout';
 import { store } from '@/routes/two-factor/login';
 
 export default function TwoFactorChallenge() {
@@ -29,6 +28,11 @@ export default function TwoFactorChallenge() {
         };
     }, [showRecoveryInput]);
 
+    setLayoutProps({
+        title: authConfigContent.title,
+        description: authConfigContent.description,
+    });
+
     const toggleRecoveryMode = (clearErrors: () => void): void => {
         setShowRecoveryInput(!showRecoveryInput);
         clearErrors();
@@ -36,10 +40,7 @@ export default function TwoFactorChallenge() {
     };
 
     return (
-        <AuthLayout
-            title={authConfigContent.title}
-            description={authConfigContent.description}
-        >
+        <>
             <Head title="Two-Factor Authentication" />
             <div className="space-y-6">
                 <Form
@@ -87,7 +88,7 @@ export default function TwoFactorChallenge() {
                                         </PinInput>
                                     </div>
                                     {errors.code && (
-                                        <p className="text-sm text-error-600 dark:text-error-400">
+                                        <p className="text-error-600 dark:text-error-400 text-sm">
                                             {errors.code}
                                         </p>
                                     )}
@@ -117,6 +118,6 @@ export default function TwoFactorChallenge() {
                     )}
                 </Form>
             </div>
-        </AuthLayout>
+        </>
     );
 }

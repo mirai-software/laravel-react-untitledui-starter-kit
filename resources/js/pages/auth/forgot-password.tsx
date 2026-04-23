@@ -3,19 +3,15 @@ import { Form, Head } from '@inertiajs/react';
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import TextLink from '@/components/text-link';
-import AuthLayout from '@/layouts/auth-layout';
 import { login } from '@/routes';
 import { email } from '@/routes/password';
 
 export default function ForgotPassword({ status }: { status?: string }) {
     return (
-        <AuthLayout
-            title="Forgot password"
-            description="Enter your email to receive a password reset link"
-        >
+        <>
             <Head title="Forgot password" />
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-success-600">
+                <div className="text-success-600 mb-4 text-center text-sm font-medium">
                     {status}
                 </div>
             )}
@@ -52,6 +48,11 @@ export default function ForgotPassword({ status }: { status?: string }) {
                     <TextLink href={login()}>log in</TextLink>
                 </div>
             </div>
-        </AuthLayout>
+        </>
     );
 }
+
+ForgotPassword.layout = {
+    title: 'Forgot password',
+    description: 'Enter your email to receive a password reset link',
+};

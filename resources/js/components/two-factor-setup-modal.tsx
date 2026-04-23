@@ -9,7 +9,7 @@ import {
     ModalOverlay,
 } from '@/components/application/modals/modal';
 import { Button } from '@/components/base/buttons/button';
-import { PinInput } from '@/components/base/pin-input/pin-input';
+import { PinInput } from '@/components/base/input/pin-input';
 import { Spinner } from '@/components/spinner';
 import { useAppearance } from '@/hooks/use-appearance';
 import { useClipboard } from '@/hooks/use-clipboard';
@@ -17,7 +17,6 @@ import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
 import { confirm } from '@/routes/two-factor';
 
 import AlertError from './alert-error';
-
 
 function GridScanIcon() {
     return (
@@ -116,7 +115,7 @@ function TwoFactorSetupStep({
                                         type="text"
                                         readOnly
                                         value={manualSetupKey}
-                                        className="h-full w-full bg-bg-primary p-3 text-text-primary outline-none"
+                                        className="h-full w-full bg-bg-primary p-3 text-text-primary outline-hidden"
                                     />
                                     <button
                                         onClick={() => copy(manualSetupKey)}
@@ -190,7 +189,7 @@ function TwoFactorVerificationStep({
                                 </PinInput.Group>
                             </PinInput>
                             {errors?.confirmTwoFactorAuthentication?.code && (
-                                <p className="text-sm text-error-600 dark:text-error-400">
+                                <p className="text-error-600 dark:text-error-400 text-sm">
                                     {errors.confirmTwoFactorAuthentication.code}
                                 </p>
                             )}

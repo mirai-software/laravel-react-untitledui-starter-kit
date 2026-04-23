@@ -3,7 +3,7 @@ import type { ComponentType, SVGAttributes } from 'react';
 
 export type BreadcrumbItem = {
     title: string;
-    href: string;
+    href: NonNullable<InertiaLinkProps['href']>;
 };
 
 export type NavItem = {

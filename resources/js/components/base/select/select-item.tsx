@@ -70,7 +70,7 @@ export const SelectItem = ({
                 <div
                     className={cx(
                         'flex cursor-pointer items-center gap-2 rounded-md outline-hidden select-none',
-                        state.isSelected && 'bg-active',
+                        state.isSelected && 'bg-primary_hover',
                         state.isDisabled && 'cursor-not-allowed',
                         state.isFocused && 'bg-primary_hover',
                         state.isFocusVisible &&
@@ -78,7 +78,7 @@ export const SelectItem = ({
 
                         // Icon styles
                         '*:data-icon:size-5 *:data-icon:shrink-0 *:data-icon:text-fg-quaternary',
-                        state.isDisabled && '*:data-icon:text-fg-disabled',
+                        state.isDisabled && 'opacity-50',
 
                         sizes[size],
                     )}
@@ -101,7 +101,6 @@ export const SelectItem = ({
                             slot="label"
                             className={cx(
                                 'truncate text-md font-medium whitespace-nowrap text-primary',
-                                state.isDisabled && 'text-disabled',
                             )}
                         >
                             {label ||
@@ -115,7 +114,6 @@ export const SelectItem = ({
                                 slot="description"
                                 className={cx(
                                     'text-md whitespace-nowrap text-tertiary',
-                                    state.isDisabled && 'text-disabled',
                                 )}
                             >
                                 {supportingText}
@@ -131,7 +129,6 @@ export const SelectItem = ({
                                 size === 'sm'
                                     ? 'size-4 stroke-[2.5px]'
                                     : 'size-5',
-                                state.isDisabled && 'text-fg-disabled',
                             )}
                         />
                     )}

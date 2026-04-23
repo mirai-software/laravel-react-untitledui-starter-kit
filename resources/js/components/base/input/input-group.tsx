@@ -30,8 +30,8 @@ export const InputPrefix = ({
             // Size styles based on size when within an `InputGroup`
             'in-data-input-wrapper:in-data-[input-size=md]:py-2.5 in-data-input-wrapper:in-data-[input-size=md]:pr-3 in-data-input-wrapper:in-data-[input-size=md]:pl-3.5 in-data-input-wrapper:in-data-[input-size=sm]:px-3 in-data-input-wrapper:in-data-[input-size=sm]:py-2',
             // Disabled styles
-            isDisabled && 'border-disabled bg-disabled_subtle text-tertiary',
-            'in-data-input-wrapper:group-disabled:bg-disabled_subtle in-data-input-wrapper:group-disabled:text-disabled in-data-input-wrapper:group-disabled:ring-border-disabled',
+            isDisabled && 'text-tertiary opacity-50',
+            'in-data-input-wrapper:group-disabled:opacity-50',
 
             props.className,
         )}
@@ -135,7 +135,7 @@ export const InputGroup = ({
                             'has-[&>select]:shadow-xs has-[&>select]:ring-1 has-[&>select]:ring-border-primary has-[&>select]:ring-inset has-[&>select]:has-[input:focus]:ring-2 has-[&>select]:has-[input:focus]:ring-border-brand',
 
                             isDisabled &&
-                                'cursor-not-allowed has-[&>select]:bg-disabled_subtle has-[&>select]:ring-border-disabled',
+                                'cursor-not-allowed has-[&>select]:opacity-50',
                             isInvalid &&
                                 'has-[&>select]:ring-border-error_subtle has-[&>select]:has-[input:focus]:ring-border-error',
                         )}
@@ -156,7 +156,7 @@ export const InputGroup = ({
                                 <p
                                     className={cx(
                                         'text-md text-tertiary',
-                                        isDisabled && 'text-disabled',
+                                        isDisabled && 'opacity-50',
                                     )}
                                 >
                                     {prefix}

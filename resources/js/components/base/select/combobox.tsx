@@ -74,7 +74,7 @@ const ComboBoxValue = ({
             className={({ isFocusWithin, isDisabled }) =>
                 cx(
                     'relative flex w-full items-center gap-2 rounded-lg bg-primary shadow-xs ring-1 ring-primary outline-hidden transition-shadow duration-100 ease-linear ring-inset',
-                    isDisabled && 'cursor-not-allowed bg-disabled_subtle',
+                    isDisabled && 'cursor-not-allowed opacity-50',
                     isFocusWithin && 'ring-2 ring-brand',
                     sizes[size].root,
                 )
@@ -93,7 +93,6 @@ const ComboBoxValue = ({
                                 <p
                                     className={cx(
                                         'text-md font-medium text-primary',
-                                        isDisabled && 'text-disabled',
                                     )}
                                 >
                                     {first}
@@ -102,7 +101,6 @@ const ComboBoxValue = ({
                                     <p
                                         className={cx(
                                             '-ml-0.75 text-md text-tertiary',
-                                            isDisabled && 'text-disabled',
                                         )}
                                     >
                                         {last}
@@ -113,7 +111,7 @@ const ComboBoxValue = ({
 
                         <AriaInput
                             placeholder={placeholder}
-                            className="z-10 w-full appearance-none bg-transparent text-md text-transparent caret-alpha-black/90 placeholder:text-placeholder focus:outline-hidden disabled:cursor-not-allowed disabled:text-disabled disabled:placeholder:text-disabled"
+                            className="z-10 w-full appearance-none bg-transparent text-md text-transparent caret-alpha-black/90 placeholder:text-placeholder focus:outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
                         />
                     </div>
 
@@ -121,7 +119,7 @@ const ComboBoxValue = ({
                         <div
                             className={cx(
                                 'absolute inset-y-0.5 right-0.5 z-10 flex items-center rounded-r-[inherit] bg-linear-to-r from-transparent to-bg-primary to-40% pl-8',
-                                isDisabled && 'to-bg-disabled_subtle',
+                                isDisabled && 'to-bg-primary/50',
                                 sizes[size].shortcut,
                                 shortcutClassName,
                             )}
@@ -129,8 +127,7 @@ const ComboBoxValue = ({
                             <span
                                 className={cx(
                                     'pointer-events-none rounded px-1 py-px text-xs font-medium text-quaternary ring-1 ring-secondary select-none ring-inset',
-                                    isDisabled &&
-                                        'bg-transparent text-disabled',
+                                    isDisabled && 'bg-transparent opacity-50',
                                 )}
                                 aria-hidden="true"
                             >

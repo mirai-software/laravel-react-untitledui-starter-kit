@@ -2,15 +2,11 @@ import { Form, Head } from '@inertiajs/react';
 
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
-import AuthLayout from '@/layouts/auth-layout';
 import { store } from '@/routes/password/confirm';
 
 export default function ConfirmPassword() {
     return (
-        <AuthLayout
-            title="Confirm your password"
-            description="This is a secure area of the application. Please confirm your password before continuing."
-        >
+        <>
             <Head title="Confirm password" />
             <Form {...store.form()} resetOnSuccess={['password']}>
                 {({ processing, errors }) => (
@@ -39,6 +35,12 @@ export default function ConfirmPassword() {
                     </div>
                 )}
             </Form>
-        </AuthLayout>
+        </>
     );
 }
+
+ConfirmPassword.layout = {
+    title: 'Confirm your password',
+    description:
+        'This is a secure area of the application. Please confirm your password before continuing.',
+};

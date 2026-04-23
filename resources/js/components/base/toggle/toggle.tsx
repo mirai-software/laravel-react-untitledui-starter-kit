@@ -54,7 +54,7 @@ export const ToggleBase = ({
                 'cursor-pointer rounded-full bg-tertiary outline-focus-ring transition duration-150 ease-linear',
                 isSelected && 'bg-brand-solid',
                 isSelected && isHovered && 'bg-brand-solid_hover',
-                isDisabled && 'cursor-not-allowed bg-disabled',
+                isDisabled && 'cursor-not-allowed opacity-50',
                 isFocusVisible && 'outline-2 outline-offset-2',
 
                 slim && 'ring-1 ring-secondary ring-inset',
@@ -70,8 +70,6 @@ export const ToggleBase = ({
                 }}
                 className={cx(
                     'rounded-full bg-fg-white shadow-sm',
-                    isDisabled && 'bg-toggle-button-fg_disabled',
-
                     slim && 'shadow-xs',
                     slim && 'border border-toggle-border',
                     slim && isSelected && 'border-toggle-slim-border_pressed',

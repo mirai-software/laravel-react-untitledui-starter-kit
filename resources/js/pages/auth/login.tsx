@@ -5,7 +5,6 @@ import { Checkbox } from '@/components/base/checkbox/checkbox';
 import { Input } from '@/components/base/input/input';
 import { Label } from '@/components/base/input/label';
 import TextLink from '@/components/text-link';
-import AuthLayout from '@/layouts/auth-layout';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
@@ -22,10 +21,7 @@ export default function Login({
     canRegister,
 }: Props) {
     return (
-        <AuthLayout
-            title="Log in to your account"
-            description="Enter your email and password below to log in"
-        >
+        <>
             <Head title="Log in" />
 
             <Form
@@ -98,10 +94,15 @@ export default function Login({
             </Form>
 
             {status && (
-                <div className="mb-4 text-center text-sm font-medium text-success-600">
+                <div className="text-success-600 mb-4 text-center text-sm font-medium">
                     {status}
                 </div>
             )}
-        </AuthLayout>
+        </>
     );
 }
+
+Login.layout = {
+    title: 'Log in to your account',
+    description: 'Enter your email and password below to log in',
+};
