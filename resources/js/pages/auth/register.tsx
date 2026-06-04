@@ -9,7 +9,7 @@ import { store } from '@/routes/register';
 export default function Register() {
     return (
         <>
-            <Head title="Register" />
+            <Head title="Registrati" />
             <Form
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
@@ -22,18 +22,18 @@ export default function Register() {
                             <Input
                                 name="name"
                                 type="text"
-                                label="Name"
+                                label="Nome"
                                 isRequired
                                 autoFocus
                                 autoComplete="name"
-                                placeholder="Full name"
+                                placeholder="Nome e cognome"
                                 isInvalid={!!errors.name}
                                 hint={errors.name}
                             />
                             <Input
                                 name="email"
                                 type="email"
-                                label="Email address"
+                                label="Indirizzo email"
                                 isRequired
                                 autoComplete="email"
                                 placeholder="email@example.com"
@@ -53,10 +53,10 @@ export default function Register() {
                             <Input
                                 name="password_confirmation"
                                 type="password"
-                                label="Confirm password"
+                                label="Conferma password"
                                 isRequired
                                 autoComplete="new-password"
-                                placeholder="Confirm password"
+                                placeholder="Conferma password"
                                 isInvalid={!!errors.password_confirmation}
                                 hint={errors.password_confirmation}
                             />
@@ -66,13 +66,13 @@ export default function Register() {
                                 isLoading={processing}
                                 data-test="register-user-button"
                             >
-                                Create account
+                                Crea account
                             </Button>
                         </div>
                         <div className="text-center text-sm text-text-tertiary">
-                            Already have an account?{' '}
+                            Hai già un account?{' '}
                             <TextLink href={login()} tabIndex={6}>
-                                Log in
+                                Accedi
                             </TextLink>
                         </div>
                     </>
@@ -83,6 +83,6 @@ export default function Register() {
 }
 
 Register.layout = {
-    title: 'Create an account',
-    description: 'Enter your details below to create your account',
+    title: 'Crea un account',
+    description: 'Inserisci i tuoi dati per creare il tuo account',
 };

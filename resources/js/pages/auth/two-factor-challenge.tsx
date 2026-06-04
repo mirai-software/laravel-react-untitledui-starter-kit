@@ -15,16 +15,16 @@ export default function TwoFactorChallenge() {
     const authConfigContent = useMemo(() => {
         if (showRecoveryInput)
             return {
-                title: 'Recovery Code',
+                title: 'Codice di recupero',
                 description:
-                    'Please confirm access to your account by entering one of your emergency recovery codes.',
-                toggleText: 'login using an authentication code',
+                    "Conferma l'accesso al tuo account inserendo uno dei tuoi codici di recupero di emergenza.",
+                toggleText: 'accedi con un codice di autenticazione',
             };
         return {
-            title: 'Authentication Code',
+            title: 'Codice di autenticazione',
             description:
-                'Enter the authentication code provided by your authenticator application.',
-            toggleText: 'login using a recovery code',
+                'Inserisci il codice di autenticazione fornito dalla tua app di autenticazione.',
+            toggleText: 'accedi con un codice di recupero',
         };
     }, [showRecoveryInput]);
 
@@ -41,7 +41,7 @@ export default function TwoFactorChallenge() {
 
     return (
         <>
-            <Head title="Two-Factor Authentication" />
+            <Head title="Autenticazione a due fattori" />
             <div className="space-y-6">
                 <Form
                     {...store.form()}
@@ -55,7 +55,7 @@ export default function TwoFactorChallenge() {
                                 <Input
                                     name="recovery_code"
                                     type="text"
-                                    placeholder="Enter recovery code"
+                                    placeholder="Inserisci il codice di recupero"
                                     autoFocus={showRecoveryInput}
                                     isRequired
                                     isInvalid={!!errors.recovery_code}
@@ -100,10 +100,10 @@ export default function TwoFactorChallenge() {
                                 isDisabled={processing}
                                 isLoading={processing}
                             >
-                                Continue
+                                Continua
                             </Button>
                             <div className="text-center text-sm text-text-tertiary">
-                                <span>or you can </span>
+                                <span>oppure puoi </span>
                                 <button
                                     type="button"
                                     className="cursor-pointer text-text-primary underline decoration-gray-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-gray-600"

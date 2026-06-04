@@ -9,7 +9,7 @@ type Props = { token: string; email: string };
 export default function ResetPassword({ token, email }: Props) {
     return (
         <>
-            <Head title="Reset password" />
+            <Head title="Reimposta password" />
             <Form
                 {...update.form()}
                 transform={(data) => ({ ...data, token, email })}
@@ -40,9 +40,9 @@ export default function ResetPassword({ token, email }: Props) {
                         <Input
                             name="password_confirmation"
                             type="password"
-                            label="Confirm password"
+                            label="Conferma password"
                             autoComplete="new-password"
-                            placeholder="Confirm password"
+                            placeholder="Conferma password"
                             isInvalid={!!errors.password_confirmation}
                             hint={errors.password_confirmation}
                         />
@@ -53,7 +53,7 @@ export default function ResetPassword({ token, email }: Props) {
                             isLoading={processing}
                             data-test="reset-password-button"
                         >
-                            Reset password
+                            Reimposta password
                         </Button>
                     </div>
                 )}
@@ -63,6 +63,6 @@ export default function ResetPassword({ token, email }: Props) {
 }
 
 ResetPassword.layout = {
-    title: 'Reset password',
-    description: 'Please enter your new password below',
+    title: 'Reimposta password',
+    description: 'Inserisci la tua nuova password',
 };

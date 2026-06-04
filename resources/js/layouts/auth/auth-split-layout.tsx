@@ -1,28 +1,40 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 
 import AppLogoIcon from '@/components/app-logo-icon';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
-
 
 export default function AuthSplitLayout({
     children,
     title,
     description,
 }: AuthLayoutProps) {
-    const { name } = usePage().props;
-
     return (
         <div className="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0">
-            <div className="relative hidden h-full flex-col bg-gray-900 p-10 text-white lg:flex dark:border-r dark:border-border-secondary">
-                <div className="absolute inset-0 bg-gray-900" />
+            <div className="relative hidden h-full flex-col justify-between overflow-hidden bg-gray-900 p-10 text-white lg:flex dark:border-r dark:border-border-secondary">
+                <div className="absolute -top-24 -right-24 size-96 rounded-full bg-white/5 blur-3xl" />
+
                 <Link
                     href={home()}
-                    className="relative z-20 flex items-center text-lg font-medium"
+                    className="relative z-20 flex items-center gap-2 text-lg font-semibold text-white"
                 >
-                    <AppLogoIcon className="mr-2 size-8 fill-current text-white" />
-                    {name}
+                    <AppLogoIcon className="size-8 fill-current text-white" />
+                    Mirai
                 </Link>
+
+                <div className="relative z-20 max-w-md">
+                    <h2 className="text-3xl font-semibold tracking-tight text-balance text-white">
+                        Software su misura.
+                    </h2>
+                    <p className="mt-3 text-lg text-balance text-white/70">
+                        Progettiamo e sviluppiamo applicazioni web su misura,
+                        dal cuore di Aversa.
+                    </p>
+                </div>
+
+                <p className="relative z-20 text-sm text-white/50">
+                    © {new Date().getFullYear()} Mirai · Aversa (CE)
+                </p>
             </div>
             <div className="w-full lg:p-8">
                 <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">

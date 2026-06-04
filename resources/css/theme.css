@@ -121,17 +121,18 @@
     --color-alpha-white: rgb(255 255 255);
     --color-alpha-black: rgb(0 0 0);
 
-    --color-brand-50: rgb(249 245 255);
-    --color-brand-100: rgb(244 235 255);
-    --color-brand-200: rgb(233 215 254);
-    --color-brand-300: rgb(214 187 251);
-    --color-brand-400: rgb(182 146 246);
-    --color-brand-500: rgb(158 119 237);
-    --color-brand-600: rgb(127 86 217);
-    --color-brand-700: rgb(105 65 198);
-    --color-brand-800: rgb(83 56 158);
-    --color-brand-900: rgb(66 48 125);
-    --color-brand-950: rgb(44 28 95);
+    /* Mirai brand — arancione corallo, ancorato sul 600 (#D97757). */
+    --color-brand-50: rgb(252 246 242);
+    --color-brand-100: rgb(249 232 223);
+    --color-brand-200: rgb(242 210 193);
+    --color-brand-300: rgb(234 183 158);
+    --color-brand-400: rgb(227 156 125);
+    --color-brand-500: rgb(224 141 110);
+    --color-brand-600: rgb(217 119 87);
+    --color-brand-700: rgb(188 95 64);
+    --color-brand-800: rgb(152 75 51);
+    --color-brand-900: rgb(122 62 43);
+    --color-brand-950: rgb(66 31 21);
 
     /* LIGHT MODE VARIABLES */
 

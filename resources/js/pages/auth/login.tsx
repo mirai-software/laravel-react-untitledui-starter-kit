@@ -22,7 +22,7 @@ export default function Login({
 }: Props) {
     return (
         <>
-            <Head title="Log in" />
+            <Head title="Accedi" />
 
             <Form
                 {...store.form()}
@@ -35,7 +35,7 @@ export default function Login({
                             <Input
                                 name="email"
                                 type="email"
-                                label="Email address"
+                                label="Indirizzo email"
                                 isRequired
                                 autoFocus
                                 autoComplete="email"
@@ -53,7 +53,7 @@ export default function Login({
                                             className="ml-auto text-sm"
                                             tabIndex={5}
                                         >
-                                            Forgot password?
+                                            Password dimenticata?
                                         </TextLink>
                                     )}
                                 </div>
@@ -68,7 +68,7 @@ export default function Login({
                                 />
                             </div>
 
-                            <Checkbox name="remember" label="Remember me" />
+                            <Checkbox name="remember" label="Ricordami" />
 
                             <Button
                                 type="submit"
@@ -77,15 +77,15 @@ export default function Login({
                                 isLoading={processing}
                                 data-test="login-button"
                             >
-                                Log in
+                                Accedi
                             </Button>
                         </div>
 
                         {canRegister && (
                             <div className="text-center text-sm text-text-tertiary">
-                                Don't have an account?{' '}
+                                Non hai un account?{' '}
                                 <TextLink href={register()} tabIndex={5}>
-                                    Sign up
+                                    Registrati
                                 </TextLink>
                             </div>
                         )}
@@ -103,6 +103,6 @@ export default function Login({
 }
 
 Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
+    title: 'Accedi al tuo account',
+    description: 'Inserisci email e password per accedere',
 };
