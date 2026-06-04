@@ -1,5 +1,12 @@
 import { Link } from '@inertiajs/react';
-import { BookOpen01, Folder, Grid01, Settings01 } from '@untitledui/icons';
+import {
+    BookOpen01,
+    Folder,
+    Grid01,
+    Settings01,
+    Shield01,
+    Users01,
+} from '@untitledui/icons';
 
 import { useSidebar } from '@/components/app-shell';
 import { NavItemBase } from '@/components/application/app-navigation/base-components/nav-item';
@@ -10,11 +17,15 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cx, toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { edit } from '@/routes/profile';
+import { index as rolesIndex } from '@/routes/roles';
+import { index as usersIndex } from '@/routes/users';
 
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItemType[] = [
     { label: 'Dashboard', href: toUrl(dashboard()), icon: Grid01 },
+    { label: 'Ruoli', href: toUrl(rolesIndex()), icon: Shield01 },
+    { label: 'Utenti', href: toUrl(usersIndex()), icon: Users01 },
     { label: 'Settings', href: toUrl(edit()), icon: Settings01 },
 ];
 
