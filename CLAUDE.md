@@ -228,3 +228,35 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - IMPORTANT: Activate `inertia-react-development` when working with Inertia React client-side patterns.
 
 </laravel-boost-guidelines>
+
+<!--
+  Convenzioni di progetto (Mirai core base).
+  Questa sezione è FUORI dal blocco <laravel-boost-guidelines> apposta:
+  Boost rigenera solo il contenuto fra quei tag, quindi ciò che scriviamo
+  qui sotto sopravvive a `boost:install`.
+-->
+
+# Convenzioni di progetto
+
+## Frontend (React / TypeScript)
+
+- **Componenti come arrow function, sempre** — root, sub-componenti dei compound, helper privati e inline. Mai `function MyComponent() {}`.
+  - Named export: `const X = (...) => (...); export { X };`
+  - Default export: `const X = (...) => (...); export default X;`
+- **Alias `@/`** per gli import da `resources/js` (es. `@/components/...`, `@/hooks/...`, `@/routes/...`). Niente percorsi relativi profondi (`../../..`).
+- **Niente `any`** — tipizzare esplicitamente. In caso di tipo davvero ignoto usare `unknown` e restringere.
+- **Niente non-null assertion (`!`)** — gestire i casi nulli con guardie, optional chaining o default. (Nota: il postfix `!` di Tailwind 4 per `!important`, es. `text-white!`, è un'altra cosa ed è consentito.)
+- **Rotte tramite Wayfinder**: importare gli helper da `@/routes/...` (rotte con nome) o `@/actions/...` (controller). Non hardcodare i path; rigenerare con `php artisan wayfinder:generate --with-form` dopo modifiche alle rotte.
+- **Permessi lato client** via l'hook `usePermissions()` (permessi condivisi da `HandleInertiaRequests`); non reimplementare la lettura di `auth.permissions`.
+- **UI in italiano**: le stringhe rivolte all'utente vanno in italiano.
+
+## Backend (PHP / Laravel)
+
+- **Rotte come attributi** ([spatie/laravel-route-attributes](https://github.com/spatie/laravel-route-attributes)) sui controller in `app/Http/Controllers`; i file di rotta restano solo per le rotte inertia-only senza controller. Il gruppo `web` è applicato via `config/route-attributes.php`.
+- **Autorizzazione**: il ruolo `admin` bypassa ogni check via `Gate::before`. Le policy/`FormRequest` agganciano i permessi spatie (`users.view`, `roles.update`, …).
+- **Soft delete utenti**: `User` usa `SoftDeletes`. "Disattiva" = soft delete (reversibile con restore). Solo l'auto-eliminazione account hard-deletava in passato: ora anch'essa è soft delete.
+
+## Workflow
+
+- Eseguire i comandi nel container come utente `sail` (`vendor/bin/sail …`), mai `docker exec` come root.
+- Prima di chiudere: `vendor/bin/pint`, `vendor/bin/phpstan analyse`, `npm run types:check`, e i test interessati.
