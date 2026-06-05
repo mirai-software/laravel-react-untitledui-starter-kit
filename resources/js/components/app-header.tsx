@@ -6,6 +6,7 @@ import {
     Menu01,
     SearchLg,
 } from '@untitledui/icons';
+import { Button as AriaButton } from 'react-aria-components';
 
 import { SlideoutMenu } from '@/components/application/slideout-menus/slideout-menu';
 import { Avatar } from '@/components/base/avatar/avatar';
@@ -13,6 +14,7 @@ import { Button } from '@/components/base/buttons/button';
 import { Dropdown } from '@/components/base/dropdown/dropdown';
 import { Tooltip } from '@/components/base/tooltip/tooltip';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { UserInfo } from '@/components/user-info';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
@@ -176,17 +178,26 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                             </div>
                         </div>
                         <Dropdown.Root>
-                            <button className="inline-flex size-10 items-center justify-center rounded-full p-1 transition-colors hover:bg-bg-primary_hover">
+                            <AriaButton className="inline-flex size-10 cursor-pointer items-center justify-center rounded-full p-1 outline-focus-ring transition-colors hover:bg-bg-primary_hover focus-visible:outline-2 focus-visible:outline-offset-2">
                                 <Avatar
                                     size="sm"
                                     src={auth.user.avatar}
                                     alt={auth.user.name}
                                     initials={getInitials(auth.user.name)}
                                 />
-                            </button>
-                            <Dropdown.Popover placement="bottom end">
-                                <Dropdown.Menu className="w-56">
-                                    <UserMenuContent user={auth.user} />
+                            </AriaButton>
+                            <Dropdown.Popover
+                                placement="bottom end"
+                                className="min-w-60"
+                            >
+                                <div className="flex items-center gap-2 border-b border-border-secondary px-3 py-2.5 text-sm">
+                                    <UserInfo
+                                        user={auth.user}
+                                        showEmail={true}
+                                    />
+                                </div>
+                                <Dropdown.Menu>
+                                    <UserMenuContent />
                                 </Dropdown.Menu>
                             </Dropdown.Popover>
                         </Dropdown.Root>

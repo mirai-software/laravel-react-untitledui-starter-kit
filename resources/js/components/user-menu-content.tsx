@@ -1,27 +1,39 @@
 import { router } from '@inertiajs/react';
-import { LogOut01, Settings01 } from '@untitledui/icons';
+import {
+    LogOut01,
+    Monitor01,
+    Moon01,
+    Settings01,
+    Sun,
+} from '@untitledui/icons';
+import type { FC } from 'react';
 
 import { Dropdown } from '@/components/base/dropdown/dropdown';
-import { UserInfo } from '@/components/user-info';
+import type { Appearance } from '@/hooks/use-appearance';
+import { useAppearance } from '@/hooks/use-appearance';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { toUrl } from '@/lib/utils';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
-import type { User } from '@/types';
 
-type Props = { user: User };
+const themeOptions: {
+    value: Appearance;
+    label: string;
+    icon: FC<{ className?: string }>;
+}[] = [
+    { value: 'light', label: 'Chiaro', icon: Sun },
+    { value: 'dark', label: 'Scuro', icon: Moon01 },
+    { value: 'system', label: 'Sistema', icon: Monitor01 },
+];
 
-export function UserMenuContent({ user }: Props) {
+export function UserMenuContent() {
     const cleanup = useMobileNavigation();
+    const { appearance, updateAppearance } = useAppearance();
 
     return (
         <>
-            <div className="flex items-center gap-2 px-3 py-2 text-left text-sm">
-                <UserInfo user={user} showEmail={true} />
-            </div>
-            <Dropdown.Separator />
             <Dropdown.Item
-                label="Settings"
+                label="Impostazioni profilo"
                 icon={Settings01}
                 onAction={() => {
                     cleanup();
@@ -29,8 +41,18 @@ export function UserMenuContent({ user }: Props) {
                 }}
             />
             <Dropdown.Separator />
+            {themeOptions.map((option) => (
+                <Dropdown.Item
+                    key={option.value}
+                    label={option.label}
+                    icon={option.icon}
+                    addon={appearance === option.value ? 'Attivo' : undefined}
+                    onAction={() => updateAppearance(option.value)}
+                />
+            ))}
+            <Dropdown.Separator />
             <Dropdown.Item
-                label="Log out"
+                label="Esci"
                 icon={LogOut01}
                 data-test="logout-button"
                 onAction={() => {
