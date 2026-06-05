@@ -16,9 +16,9 @@ export default function AppearanceToggleTab({
         icon: ComponentType<SVGAttributes<SVGElement>>;
         label: string;
     }[] = [
-        { value: 'light', icon: Sun, label: 'Light' },
-        { value: 'dark', icon: Moon01, label: 'Dark' },
-        { value: 'system', icon: Monitor01, label: 'System' },
+        { value: 'light', icon: Sun, label: 'Chiaro' },
+        { value: 'dark', icon: Moon01, label: 'Scuro' },
+        { value: 'system', icon: Monitor01, label: 'Sistema' },
     ];
 
     return (

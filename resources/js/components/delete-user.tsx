@@ -12,7 +12,6 @@ import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import Heading from '@/components/heading';
 
-
 export default function DeleteUser() {
     const passwordInput = useRef<HTMLInputElement>(null);
 
@@ -20,14 +19,15 @@ export default function DeleteUser() {
         <div className="space-y-6">
             <Heading
                 variant="small"
-                title="Delete account"
-                description="Delete your account and all of its resources"
+                title="Elimina account"
+                description="Disattiva il tuo account e revoca l'accesso"
             />
-            <div className="space-y-4 rounded-lg border border-error-300/30 bg-error-25 p-4 dark:border-error-500/20 dark:bg-error-950">
-                <div className="relative space-y-0.5 text-error-600 dark:text-error-300">
-                    <p className="font-medium">Warning</p>
+            <div className="border-error-300/30 bg-error-25 dark:border-error-500/20 dark:bg-error-950 space-y-4 rounded-lg border p-4">
+                <div className="text-error-600 dark:text-error-300 relative space-y-0.5">
+                    <p className="font-medium">Attenzione</p>
                     <p className="text-sm">
-                        Please proceed with caution, this cannot be undone.
+                        Procedi con cautela: l'account verrà disattivato e
+                        perderai l'accesso.
                     </p>
                 </div>
 
@@ -36,7 +36,7 @@ export default function DeleteUser() {
                         color="primary-destructive"
                         data-test="delete-user-button"
                     >
-                        Delete account
+                        Elimina account
                     </Button>
                     <ModalOverlay isDismissable>
                         <Modal>
@@ -44,16 +44,14 @@ export default function DeleteUser() {
                                 {({ close }) => (
                                     <>
                                         <h2 className="text-lg font-semibold text-text-primary">
-                                            Are you sure you want to delete your
+                                            Vuoi davvero eliminare il tuo
                                             account?
                                         </h2>
                                         <p className="mt-2 text-sm text-text-tertiary">
-                                            Once your account is deleted, all of
-                                            its resources and data will also be
-                                            permanently deleted. Please enter
-                                            your password to confirm you would
-                                            like to permanently delete your
-                                            account.
+                                            Una volta eliminato, il tuo account
+                                            verrà disattivato e perderai
+                                            l'accesso. Inserisci la password per
+                                            confermare.
                                         </p>
 
                                         <Form
@@ -93,7 +91,7 @@ export default function DeleteUser() {
                                                                 close();
                                                             }}
                                                         >
-                                                            Cancel
+                                                            Annulla
                                                         </Button>
                                                         <Button
                                                             color="primary-destructive"
@@ -103,7 +101,7 @@ export default function DeleteUser() {
                                                             }
                                                             data-test="confirm-delete-user-button"
                                                         >
-                                                            Delete account
+                                                            Elimina account
                                                         </Button>
                                                     </div>
                                                 </>

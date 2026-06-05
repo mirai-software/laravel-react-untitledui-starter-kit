@@ -19,13 +19,13 @@ export default function Profile({
     const { auth } = usePage().props;
     return (
         <>
-            <Head title="Profile settings" />
-            <h1 className="sr-only">Profile Settings</h1>
+            <Head title="Impostazioni profilo" />
+            <h1 className="sr-only">Impostazioni profilo</h1>
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Profile information"
-                    description="Update your name and email address"
+                    title="Informazioni profilo"
+                    description="Aggiorna nome e indirizzo email"
                 />
                 <Form
                     {...ProfileController.update.form()}
@@ -36,22 +36,22 @@ export default function Profile({
                         <>
                             <Input
                                 name="name"
-                                label="Name"
+                                label="Nome"
                                 defaultValue={auth.user.name}
                                 isRequired
                                 autoComplete="name"
-                                placeholder="Full name"
+                                placeholder="Nome completo"
                                 isInvalid={!!errors.name}
                                 hint={errors.name}
                             />
                             <Input
                                 name="email"
                                 type="email"
-                                label="Email address"
+                                label="Indirizzo email"
                                 defaultValue={auth.user.email}
                                 isRequired
                                 autoComplete="username"
-                                placeholder="Email address"
+                                placeholder="Indirizzo email"
                                 isInvalid={!!errors.email}
                                 hint={errors.email}
                             />
@@ -59,21 +59,23 @@ export default function Profile({
                                 auth.user.email_verified_at === null && (
                                     <div>
                                         <p className="-mt-4 text-sm text-text-tertiary">
-                                            Your email address is unverified.{' '}
+                                            Il tuo indirizzo email non è
+                                            verificato.{' '}
                                             <Link
                                                 href={send()}
                                                 as="button"
                                                 className="text-text-primary underline decoration-gray-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-gray-600"
                                             >
-                                                Click here to resend the
-                                                verification email.
+                                                Clicca qui per inviare di nuovo
+                                                l'email di verifica.
                                             </Link>
                                         </p>
                                         {status ===
                                             'verification-link-sent' && (
                                             <div className="text-success-600 mt-2 text-sm font-medium">
-                                                A new verification link has been
-                                                sent to your email address.
+                                                Un nuovo link di verifica è
+                                                stato inviato al tuo indirizzo
+                                                email.
                                             </div>
                                         )}
                                     </div>
@@ -84,7 +86,7 @@ export default function Profile({
                                     isDisabled={processing}
                                     data-test="update-profile-button"
                                 >
-                                    Save
+                                    Salva
                                 </Button>
                                 <Transition
                                     show={recentlySuccessful}
@@ -94,7 +96,7 @@ export default function Profile({
                                     leaveTo="opacity-0"
                                 >
                                     <p className="text-sm text-text-tertiary">
-                                        Saved
+                                        Salvato
                                     </p>
                                 </Transition>
                             </div>
@@ -108,5 +110,5 @@ export default function Profile({
 }
 
 Profile.layout = {
-    breadcrumbs: [{ title: 'Profile settings', href: edit() }],
+    breadcrumbs: [{ title: 'Impostazioni profilo', href: edit() }],
 };

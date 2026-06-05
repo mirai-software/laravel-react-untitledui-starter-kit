@@ -10,9 +10,9 @@ import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
 
 const sidebarNavItems: NavItem[] = [
-    { title: 'Profile', href: edit(), icon: null },
-    { title: 'Security', href: editSecurity(), icon: null },
-    { title: 'Appearance', href: editAppearance(), icon: null },
+    { title: 'Profilo', href: edit(), icon: null },
+    { title: 'Sicurezza', href: editSecurity(), icon: null },
+    { title: 'Aspetto', href: editAppearance(), icon: null },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {
@@ -25,15 +25,15 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
     return (
         <div className="px-4 py-6">
             <Heading
-                title="Settings"
-                description="Manage your profile and account settings"
+                title="Impostazioni"
+                description="Gestisci il profilo e le impostazioni dell'account"
             />
 
             <div className="flex flex-col lg:flex-row lg:space-x-12">
                 <aside className="w-full max-w-xl lg:w-48">
                     <nav
                         className="flex flex-col space-y-1 space-x-0"
-                        aria-label="Settings"
+                        aria-label="Impostazioni"
                     >
                         {sidebarNavItems.map((item, index) => (
                             <Link

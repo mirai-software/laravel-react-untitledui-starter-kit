@@ -7,7 +7,6 @@ import { regenerateRecoveryCodes } from '@/routes/two-factor';
 
 import AlertError from './alert-error';
 
-
 type Props = {
     recoveryCodesList: string[];
     fetchRecoveryCodes: () => Promise<void>;
@@ -53,11 +52,12 @@ export default function TwoFactorRecoveryCodes({
             <div className="px-4 py-4 sm:px-6">
                 <h3 className="flex items-center gap-3 text-base font-semibold text-text-primary">
                     <Lock01 className="size-4" aria-hidden="true" />
-                    2FA Recovery Codes
+                    Codici di recupero 2FA
                 </h3>
                 <p className="mt-1 text-sm text-text-tertiary">
-                    Recovery codes let you regain access if you lose your 2FA
-                    device. Store them in a secure password manager.
+                    I codici di recupero ti permettono di riottenere l'accesso
+                    se perdi il dispositivo 2FA. Conservali in un gestore di
+                    password sicuro.
                 </p>
             </div>
             <div className="px-4 pb-4 sm:px-6">
@@ -68,7 +68,8 @@ export default function TwoFactorRecoveryCodes({
                         aria-expanded={codesAreVisible}
                         aria-controls="recovery-codes-section"
                     >
-                        {codesAreVisible ? 'Hide' : 'View'} Recovery Codes
+                        {codesAreVisible ? 'Nascondi' : 'Mostra'} codici di
+                        recupero
                     </Button>
 
                     {canRegenerateCodes && (
@@ -85,7 +86,7 @@ export default function TwoFactorRecoveryCodes({
                                     iconLeading={RefreshCw01}
                                     aria-describedby="regenerate-warning"
                                 >
-                                    Regenerate Codes
+                                    Rigenera codici
                                 </Button>
                             )}
                         </Form>
@@ -105,7 +106,7 @@ export default function TwoFactorRecoveryCodes({
                                     ref={codesSectionRef}
                                     className="grid gap-1 rounded-lg bg-bg-secondary p-4 font-mono text-sm"
                                     role="list"
-                                    aria-label="Recovery codes"
+                                    aria-label="Codici di recupero"
                                 >
                                     {recoveryCodesList.length ? (
                                         recoveryCodesList.map((code, index) => (
@@ -118,7 +119,7 @@ export default function TwoFactorRecoveryCodes({
                                             </div>
                                         ))
                                     ) : (
-                                        <div aria-label="Loading recovery codes">
+                                        <div aria-label="Caricamento codici di recupero">
                                             {Array.from(
                                                 { length: 8 },
                                                 (_, index) => (
@@ -135,13 +136,14 @@ export default function TwoFactorRecoveryCodes({
 
                                 <div className="text-xs text-text-tertiary select-none">
                                     <p id="regenerate-warning">
-                                        Each recovery code can be used once to
-                                        access your account and will be removed
-                                        after use. If you need more, click{' '}
+                                        Ogni codice di recupero può essere usato
+                                        una sola volta per accedere al tuo
+                                        account e verrà rimosso dopo l'uso. Se
+                                        te ne servono altri, clicca{' '}
                                         <span className="font-bold">
-                                            Regenerate Codes
+                                            Rigenera codici
                                         </span>{' '}
-                                        above.
+                                        qui sopra.
                                     </p>
                                 </div>
                             </>

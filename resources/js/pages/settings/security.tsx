@@ -52,15 +52,15 @@ export default function Security({
 
     return (
         <>
-            <Head title="Security settings" />
+            <Head title="Impostazioni sicurezza" />
 
-            <h1 className="sr-only">Security settings</h1>
+            <h1 className="sr-only">Impostazioni sicurezza</h1>
 
             <div className="space-y-6">
                 <Heading
                     variant="small"
-                    title="Update password"
-                    description="Ensure your account is using a long, random password to stay secure"
+                    title="Aggiorna password"
+                    description="Assicurati che il tuo account usi una password lunga e casuale per restare al sicuro"
                 />
 
                 <Form
@@ -85,9 +85,9 @@ export default function Security({
                                 ref={currentPasswordInput}
                                 name="current_password"
                                 type="password"
-                                label="Current password"
+                                label="Password attuale"
                                 autoComplete="current-password"
-                                placeholder="Current password"
+                                placeholder="Password attuale"
                                 isInvalid={!!errors.current_password}
                                 hint={errors.current_password}
                             />
@@ -95,18 +95,18 @@ export default function Security({
                                 ref={passwordInput}
                                 name="password"
                                 type="password"
-                                label="New password"
+                                label="Nuova password"
                                 autoComplete="new-password"
-                                placeholder="New password"
+                                placeholder="Nuova password"
                                 isInvalid={!!errors.password}
                                 hint={errors.password}
                             />
                             <Input
                                 name="password_confirmation"
                                 type="password"
-                                label="Confirm password"
+                                label="Conferma password"
                                 autoComplete="new-password"
-                                placeholder="Confirm password"
+                                placeholder="Conferma password"
                                 isInvalid={!!errors.password_confirmation}
                                 hint={errors.password_confirmation}
                             />
@@ -116,7 +116,7 @@ export default function Security({
                                     isDisabled={processing}
                                     data-test="update-password-button"
                                 >
-                                    Save password
+                                    Salva password
                                 </Button>
                                 <Transition
                                     show={recentlySuccessful}
@@ -126,7 +126,7 @@ export default function Security({
                                     leaveTo="opacity-0"
                                 >
                                     <p className="text-sm text-text-tertiary">
-                                        Saved
+                                        Salvato
                                     </p>
                                 </Transition>
                             </div>
@@ -139,17 +139,17 @@ export default function Security({
                 <div className="space-y-6">
                     <Heading
                         variant="small"
-                        title="Two-Factor Authentication"
-                        description="Manage your two-factor authentication settings"
+                        title="Autenticazione a due fattori"
+                        description="Gestisci le impostazioni di autenticazione a due fattori"
                     />
                     {twoFactorEnabled ? (
                         <div className="flex flex-col items-start justify-start space-y-4">
-                            <Badge color="success">Enabled</Badge>
+                            <Badge color="success">Attiva</Badge>
                             <p className="text-text-tertiary">
-                                With two-factor authentication enabled, you will
-                                be prompted for a secure, random pin during
-                                login, which you can retrieve from the
-                                TOTP-supported application on your phone.
+                                Con l'autenticazione a due fattori attiva, al
+                                login ti verrà richiesto un pin sicuro e
+                                casuale, che puoi ottenere dall'applicazione
+                                compatibile con TOTP sul tuo telefono.
                             </p>
                             <TwoFactorRecoveryCodes
                                 recoveryCodesList={recoveryCodesList}
@@ -165,7 +165,7 @@ export default function Security({
                                             isDisabled={processing}
                                             iconLeading={ShieldOff}
                                         >
-                                            Disable 2FA
+                                            Disattiva 2FA
                                         </Button>
                                     )}
                                 </Form>
@@ -173,12 +173,12 @@ export default function Security({
                         </div>
                     ) : (
                         <div className="flex flex-col items-start justify-start space-y-4">
-                            <Badge color="error">Disabled</Badge>
+                            <Badge color="error">Disattivata</Badge>
                             <p className="text-text-tertiary">
-                                When you enable two-factor authentication, you
-                                will be prompted for a secure pin during login.
-                                This pin can be retrieved from a TOTP-supported
-                                application on your phone.
+                                Quando attivi l'autenticazione a due fattori, al
+                                login ti verrà richiesto un pin sicuro. Questo
+                                pin può essere ottenuto da un'applicazione
+                                compatibile con TOTP sul tuo telefono.
                             </p>
                             <div>
                                 {hasSetupData ? (
@@ -186,7 +186,7 @@ export default function Security({
                                         onClick={() => setShowSetupModal(true)}
                                         iconLeading={ShieldTick}
                                     >
-                                        Continue Setup
+                                        Continua configurazione
                                     </Button>
                                 ) : (
                                     <Form
@@ -201,7 +201,7 @@ export default function Security({
                                                 isDisabled={processing}
                                                 iconLeading={ShieldTick}
                                             >
-                                                Enable 2FA
+                                                Attiva 2FA
                                             </Button>
                                         )}
                                     </Form>
@@ -227,5 +227,5 @@ export default function Security({
 }
 
 Security.layout = {
-    breadcrumbs: [{ title: 'Security settings', href: edit() }],
+    breadcrumbs: [{ title: 'Impostazioni sicurezza', href: edit() }],
 };
