@@ -58,7 +58,7 @@ class UserController extends Controller
     #[Post('users', name: 'users.store')]
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $user = User::create([
+        $user = User::query()->create([
             'name'     => $request->validated('name'),
             'email'    => $request->validated('email'),
             'password' => $request->validated('password'),
