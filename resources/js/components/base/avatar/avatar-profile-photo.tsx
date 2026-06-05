@@ -68,7 +68,7 @@ export const AvatarProfilePhoto = ({
                     className={cx(
                         'size-full rounded-full object-cover',
                         contrastBorder &&
-                            'outline-1 -outline-offset-1 outline-avatar-contrast-border',
+                            'outline-avatar-contrast-border outline-1 -outline-offset-1',
                         styles[size].content,
                     )}
                 />

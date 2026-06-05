@@ -23,7 +23,6 @@ import type { BreadcrumbItem, NavItem } from '@/types';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
-
 type Props = { breadcrumbs?: BreadcrumbItem[] };
 
 const mainNavItems: NavItem[] = [
