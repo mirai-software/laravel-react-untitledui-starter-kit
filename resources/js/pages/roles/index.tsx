@@ -4,6 +4,7 @@ import { Edit01, Plus, Trash01 } from '@untitledui/icons';
 import { Badge } from '@/components/base/badges/badges';
 import { Button } from '@/components/base/buttons/button';
 import Heading from '@/components/heading';
+import { usePermissions } from '@/hooks/use-permissions';
 import { dashboard } from '@/routes';
 import { create, destroy, edit, index } from '@/routes/roles';
 import type { PageWithBreadcrumbs } from '@/types';
@@ -20,6 +21,12 @@ type Props = {
 };
 
 const RolesIndex: PageWithBreadcrumbs<Props> = ({ roles }) => {
+    const { can } = usePermissions();
+    const canCreate = can('roles.create');
+    const canUpdate = can('roles.update');
+    const canDelete = can('roles.delete');
+    const showActions = canUpdate || canDelete;
+
     const handleDelete = (role: RoleRow): void => {
         if (
             window.confirm(
@@ -39,9 +46,11 @@ const RolesIndex: PageWithBreadcrumbs<Props> = ({ roles }) => {
                         title="Ruoli"
                         description="Gestisci i ruoli e i permessi assegnati."
                     />
-                    <Button href={create().url} iconLeading={Plus}>
-                        Nuovo ruolo
-                    </Button>
+                    {canCreate && (
+                        <Button href={create().url} iconLeading={Plus}>
+                            Nuovo ruolo
+                        </Button>
+                    )}
                 </div>
 
                 <div className="overflow-hidden rounded-xl border border-border-secondary">
@@ -52,9 +61,11 @@ const RolesIndex: PageWithBreadcrumbs<Props> = ({ roles }) => {
                                 <th className="px-4 py-3 font-medium">
                                     Permessi
                                 </th>
-                                <th className="px-4 py-3 text-right font-medium">
-                                    Azioni
-                                </th>
+                                {showActions && (
+                                    <th className="px-4 py-3 text-right font-medium">
+                                        Azioni
+                                    </th>
+                                )}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border-secondary">
@@ -79,30 +90,39 @@ const RolesIndex: PageWithBreadcrumbs<Props> = ({ roles }) => {
                                     <td className="px-4 py-3 text-text-tertiary">
                                         {role.permissions_count}
                                     </td>
-                                    <td className="px-4 py-3">
-                                        <div className="flex items-center justify-end gap-1">
-                                            <Button
-                                                color="tertiary"
-                                                size="sm"
-                                                href={edit(role.id).url}
-                                                iconLeading={Edit01}
-                                            >
-                                                Modifica
-                                            </Button>
-                                            {!role.is_protected && (
-                                                <Button
-                                                    color="tertiary-destructive"
-                                                    size="sm"
-                                                    iconLeading={Trash01}
-                                                    onClick={() =>
-                                                        handleDelete(role)
-                                                    }
-                                                >
-                                                    Elimina
-                                                </Button>
-                                            )}
-                                        </div>
-                                    </td>
+                                    {showActions && (
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center justify-end gap-1">
+                                                {canUpdate && (
+                                                    <Button
+                                                        color="tertiary"
+                                                        size="sm"
+                                                        href={edit(role.id).url}
+                                                        iconLeading={Edit01}
+                                                    >
+                                                        Modifica
+                                                    </Button>
+                                                )}
+                                                {canDelete &&
+                                                    !role.is_protected && (
+                                                        <Button
+                                                            color="tertiary-destructive"
+                                                            size="sm"
+                                                            iconLeading={
+                                                                Trash01
+                                                            }
+                                                            onClick={() =>
+                                                                handleDelete(
+                                                                    role,
+                                                                )
+                                                            }
+                                                        >
+                                                            Elimina
+                                                        </Button>
+                                                    )}
+                                            </div>
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>

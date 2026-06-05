@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Models\Permission;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -41,9 +42,33 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
+                'user'        => $request->user(),
+                'permissions' => $this->permissions($request),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
+    }
+
+    /**
+     * Permessi effettivi dell'utente, usati lato client per filtrare la
+     * navigazione. Il filtro passa per `can()`, quindi l'admin
+     * (bypass via Gate::before) riceve correttamente tutti i permessi.
+     *
+     * @return list<string>
+     */
+    private function permissions(Request $request): array
+    {
+        $user = $request->user();
+
+        if ($user === null) {
+            return [];
+        }
+
+        return Permission::query()
+            ->orderBy('name')
+            ->pluck('name')
+            ->filter(fn (string $name): bool => $user->can($name))
+            ->values()
+            ->all();
     }
 }

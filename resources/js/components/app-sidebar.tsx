@@ -14,6 +14,7 @@ import { NavList } from '@/components/application/app-navigation/base-components
 import type { NavItemType } from '@/components/application/app-navigation/config';
 import { NavUser } from '@/components/nav-user';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { usePermissions } from '@/hooks/use-permissions';
 import { cx, toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { edit } from '@/routes/profile';
@@ -21,13 +22,6 @@ import { index as rolesIndex } from '@/routes/roles';
 import { index as usersIndex } from '@/routes/users';
 
 import AppLogo from './app-logo';
-
-const mainNavItems: NavItemType[] = [
-    { label: 'Dashboard', href: toUrl(dashboard()), icon: Grid01 },
-    { label: 'Ruoli', href: toUrl(rolesIndex()), icon: Shield01 },
-    { label: 'Utenti', href: toUrl(usersIndex()), icon: Users01 },
-    { label: 'Settings', href: toUrl(edit()), icon: Settings01 },
-];
 
 const footerNavItems: NavItemType[] = [
     {
@@ -43,8 +37,19 @@ const footerNavItems: NavItemType[] = [
 ];
 
 export function AppSidebar() {
+    const { can } = usePermissions();
     const { isOpen, isMobile, setOpen } = useSidebar();
     const { currentUrl } = useCurrentUrl();
+    const mainNavItems: NavItemType[] = [
+        { label: 'Dashboard', href: toUrl(dashboard()), icon: Grid01 },
+        ...(can('roles.view')
+            ? [{ label: 'Ruoli', href: toUrl(rolesIndex()), icon: Shield01 }]
+            : []),
+        ...(can('users.view')
+            ? [{ label: 'Utenti', href: toUrl(usersIndex()), icon: Users01 }]
+            : []),
+        { label: 'Settings', href: toUrl(edit()), icon: Settings01 },
+    ];
 
     return (
         <>
