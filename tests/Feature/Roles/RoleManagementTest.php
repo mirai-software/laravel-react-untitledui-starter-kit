@@ -39,9 +39,9 @@ class RoleManagementTest extends TestCase
             );
     }
 
-    public function test_super_admin_bypasses_permission_checks(): void
+    public function test_admin_bypasses_permission_checks(): void
     {
-        $this->actingAs($this->superAdmin())
+        $this->actingAs($this->admin())
             ->get(route('roles.index'))
             ->assertOk();
     }
@@ -118,9 +118,9 @@ class RoleManagementTest extends TestCase
         $this->assertDatabaseMissing('roles', ['id' => $role->id]);
     }
 
-    public function test_protected_super_admin_role_cannot_be_deleted(): void
+    public function test_protected_admin_role_cannot_be_deleted(): void
     {
-        $role = Role::findOrCreate('super-admin');
+        $role = Role::findOrCreate('admin');
 
         $this->actingAs($this->userWith(['roles.delete']))
             ->delete(route('roles.destroy', $role))
@@ -143,10 +143,10 @@ class RoleManagementTest extends TestCase
         return $user;
     }
 
-    private function superAdmin(): User
+    private function admin(): User
     {
         $user = User::factory()->create();
-        $user->assignRole(Role::findOrCreate('super-admin'));
+        $user->assignRole(Role::findOrCreate('admin'));
 
         return $user;
     }

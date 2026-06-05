@@ -35,10 +35,8 @@ class RolePermissionSeeder extends Seeder
             Permission::findOrCreate($permission, 'web');
         }
 
-        // super-admin: bypassa ogni check via Gate::before (vedi AppServiceProvider),
-        // quindi non ha bisogno di permessi espliciti.
-        Role::findOrCreate('super-admin', 'web');
-
+        // admin: bypassa ogni check via Gate::before (vedi AppServiceProvider).
+        // Manteniamo anche i permessi espliciti sincronizzati per coerenza.
         Role::findOrCreate('admin', 'web')->syncPermissions(self::PERMISSIONS);
 
         Role::findOrCreate('user', 'web');

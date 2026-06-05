@@ -24,7 +24,7 @@ class RoleController extends Controller
      *
      * @var list<string>
      */
-    private const array PROTECTED_ROLES = ['super-admin'];
+    private const array PROTECTED_ROLES = ['admin'];
 
     public function index(): Response
     {

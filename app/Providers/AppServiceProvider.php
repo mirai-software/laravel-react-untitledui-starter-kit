@@ -29,12 +29,12 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Grant every ability to the super-admin role.
+     * Grant every ability to the admin role.
      */
     protected function configureAuthorization(): void
     {
         Gate::before(
-            fn (User $user, string $ability): ?bool => $user->hasRole('super-admin') ? true : null,
+            fn (User $user, string $ability): ?bool => $user->hasRole('admin') ? true : null,
         );
     }
 
