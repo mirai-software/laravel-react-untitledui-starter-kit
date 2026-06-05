@@ -1,15 +1,7 @@
 import { Link } from '@inertiajs/react';
-import {
-    BookOpen01,
-    Folder,
-    Grid01,
-    Settings01,
-    Shield01,
-    Users01,
-} from '@untitledui/icons';
+import { Grid01, Settings01, Shield01, Users01 } from '@untitledui/icons';
 
 import { useSidebar } from '@/components/app-shell';
-import { NavItemBase } from '@/components/application/app-navigation/base-components/nav-item';
 import { NavList } from '@/components/application/app-navigation/base-components/nav-list';
 import type { NavItemType } from '@/components/application/app-navigation/config';
 import { NavUser } from '@/components/nav-user';
@@ -22,19 +14,6 @@ import { index as rolesIndex } from '@/routes/roles';
 import { index as usersIndex } from '@/routes/users';
 
 import AppLogo from './app-logo';
-
-const footerNavItems: NavItemType[] = [
-    {
-        label: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        label: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen01,
-    },
-];
 
 export function AppSidebar() {
     const { can } = usePermissions();
@@ -87,23 +66,8 @@ export function AppSidebar() {
                     />
                 </div>
 
-                {/* Footer navigation + user */}
+                {/* User */}
                 <div className="shrink-0 border-t border-border-secondary">
-                    <ul className="flex flex-col px-2 py-2 lg:px-4">
-                        {footerNavItems.map((item) => (
-                            <li key={item.label} className="py-0.5">
-                                <NavItemBase
-                                    badge={item.badge}
-                                    icon={item.icon}
-                                    href={item.href}
-                                    type="link"
-                                    current={item.href === currentUrl}
-                                >
-                                    {item.label}
-                                </NavItemBase>
-                            </li>
-                        ))}
-                    </ul>
                     <NavUser />
                 </div>
             </aside>
