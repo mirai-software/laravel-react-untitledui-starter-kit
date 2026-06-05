@@ -1,12 +1,22 @@
-# Laravel + React Starter Kit
+# Mirai Core Base — Laravel + React + Untitled UI
 
-## Introduction
+## Introduzione
 
-Our React starter kit provides a robust, modern starting point for building Laravel applications with a React frontend using [Inertia](https://inertiajs.com).
+Questo repository è il **core base** di Mirai: la fondazione comune da cui partono tutti i progetti web. Raccoglie l'essenziale condiviso da ogni applicazione — autenticazione, shell UI, design system, ruoli/permessi con interfaccia e gestione utenti — già pronto e testato.
 
-Inertia allows you to build modern, single-page React applications using classic server-side routing and controllers. This lets you enjoy the frontend power of React combined with the incredible backend productivity of Laravel and lightning-fast Vite compilation.
+È costruito su [Inertia](https://inertiajs.com), che permette di realizzare SPA React moderne usando il routing e i controller server-side di Laravel: la produttività del backend Laravel unita alla potenza del frontend React e alla compilazione fulminea di Vite.
 
-This React starter kit utilizes React 19, TypeScript, Tailwind CSS 4, and [Untitled UI](https://www.untitledui.com/) components.
+Stack: **Laravel 13** · **PHP 8.3+** · **Inertia v3** · **React 19** · **TypeScript** · **Tailwind CSS 4** · componenti [Untitled UI](https://www.untitledui.com/).
+
+## Cosa include
+
+- **Auth completo** (Fortify): login, registrazione, reset password, verifica email, 2FA, conferma password. Il primo utente registrato diventa automaticamente `admin`.
+- **Ruoli & permessi con UI** ([spatie/laravel-permission](https://spatie.be/docs/laravel-permission)): CRUD ruoli, matrice permessi a checkbox, assegnazione ruoli all'utente. Il ruolo `admin` bypassa ogni check via `Gate::before`.
+- **Gestione utenti**: CRUD con soft delete (disattivazione/riattivazione) e assegnazione ruoli nel form.
+- **Navigazione filtrata per permessi**: la sidebar e le azioni mostrano solo ciò che l'utente può fare (permessi condivisi via Inertia).
+- **Rotte come attributi** ([spatie/laravel-route-attributes](https://github.com/spatie/laravel-route-attributes)): i path sono dichiarati sui controller.
+- **App shell** Untitled UI: sidebar, header, breadcrumbs, layout, design system.
+- **Tooling**: Pint, Larastan, Rector, Pest/PHPUnit, Husky (pre-commit/pre-push), ESLint, Prettier.
 
 ## Getting Started
 
@@ -156,4 +166,4 @@ npm run prepare  # Reinstalls Husky hooks
 
 ## License
 
-The Laravel + React starter kit is open-sourced software licensed under the MIT license.
+Il Mirai core base è software open-source rilasciato sotto licenza MIT.
