@@ -10,9 +10,14 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\RouteAttributes\Attributes\Get;
+use Spatie\RouteAttributes\Attributes\Middleware;
+use Spatie\RouteAttributes\Attributes\Put;
 
+#[Middleware(['auth', 'verified'])]
 class UserRoleController extends Controller
 {
+    #[Get('users', name: 'users.index')]
     public function index(): Response
     {
         $this->authorize('viewAny', User::class);
@@ -33,6 +38,7 @@ class UserRoleController extends Controller
         ]);
     }
 
+    #[Get('users/{user}/roles', name: 'users.roles.edit')]
     public function edit(User $user): Response
     {
         $this->authorize('update', $user);
@@ -48,6 +54,7 @@ class UserRoleController extends Controller
         ]);
     }
 
+    #[Put('users/{user}/roles', name: 'users.roles.update')]
     public function update(UpdateUserRolesRequest $request, User $user): RedirectResponse
     {
         $user->syncRoles($request->validated('roles', []));

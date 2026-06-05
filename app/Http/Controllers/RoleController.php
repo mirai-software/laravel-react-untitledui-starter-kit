@@ -12,7 +12,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\RouteAttributes\Attributes\Middleware;
+use Spatie\RouteAttributes\Attributes\Resource;
 
+#[Middleware(['auth', 'verified'])]
+#[Resource(resource: 'roles', except: 'show')]
 class RoleController extends Controller
 {
     /**

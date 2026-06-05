@@ -13,7 +13,11 @@ use Illuminate\Routing\Controllers\Middleware;
 use Inertia\Inertia;
 use Inertia\Response;
 use Laravel\Fortify\Features;
+use Spatie\RouteAttributes\Attributes\Get;
+use Spatie\RouteAttributes\Attributes\Middleware as RouteMiddleware;
+use Spatie\RouteAttributes\Attributes\Put;
 
+#[RouteMiddleware(['auth', 'verified'])]
 class SecurityController extends Controller implements HasMiddleware
 {
     /**
@@ -30,6 +34,7 @@ class SecurityController extends Controller implements HasMiddleware
     /**
      * Show the user's security settings page.
      */
+    #[Get('settings/security', name: 'security.edit')]
     public function edit(TwoFactorAuthenticationRequest $request): Response
     {
         $props = [
@@ -49,6 +54,7 @@ class SecurityController extends Controller implements HasMiddleware
     /**
      * Update the user's password.
      */
+    #[Put('settings/password', name: 'user-password.update', middleware: 'throttle:6,1')]
     public function update(PasswordUpdateRequest $request): RedirectResponse
     {
         $request->user()->update([
