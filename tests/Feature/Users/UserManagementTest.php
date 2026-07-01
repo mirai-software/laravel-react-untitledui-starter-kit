@@ -68,6 +68,16 @@ class UserManagementTest extends TestCase
             ->assertSessionHasErrors('email');
     }
 
+    public function test_validation_errors_are_translated_to_italian(): void
+    {
+        $this->actingAs($this->userWith('users.create'))
+            ->post(route('users.store'), $this->validPayload(['name' => '', 'email' => 'non-valida']))
+            ->assertSessionHasErrors([
+                'name'  => 'Il campo nome è richiesto.',
+                'email' => 'E-mail non è valido.',
+            ]);
+    }
+
     public function test_user_with_permission_can_update_user_and_keep_password(): void
     {
         Role::findOrCreate('admin');
