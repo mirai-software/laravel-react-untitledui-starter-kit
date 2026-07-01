@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
 
 echo "🧪 Running test suite..."
-composer test || exit 1
+vendor/bin/sail composer test || exit 1
 
 echo "🔍 Running Rector analysis..."
-vendor/bin/rector process --dry-run || {
+vendor/bin/sail bin rector process --dry-run || {
   echo "⚠️  Rector suggests refactoring improvements"
-  echo "   Run 'vendor/bin/rector process' to apply them"
+  echo "   Run 'vendor/bin/sail bin rector process' to apply them"
   read -p "   Continue with push? (y/n) " -n 1 -r
   echo
   if [[ ! $REPLY =~ ^[Yy]$ ]]; then
