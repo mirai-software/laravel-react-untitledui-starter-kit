@@ -2,9 +2,9 @@
     "resources/**/*.{ts,tsx,js,jsx}": ["prettier --write", "eslint --fix"],
     "resources/**/*.{ts,tsx}": ["bash -c 'tsc --noEmit --pretty'"],
     "{app,bootstrap,config,database,routes,tests}/**/*.php": [
-        "vendor/bin/pint --config pint.json"
+        "vendor/bin/sail bin pint --config pint.json"
     ],
     "{app,bootstrap,config,database,routes}/**/*.php": [
-        "vendor/bin/phpstan analyse --memory-limit=2G --error-format=raw --no-progress"
+        "vendor/bin/sail bin phpstan analyse --memory-limit=2G --error-format=raw --no-progress"
     ]
 }
