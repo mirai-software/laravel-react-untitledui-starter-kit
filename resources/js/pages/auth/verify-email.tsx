@@ -1,46 +1,51 @@
-// Components
 import { Form, Head } from '@inertiajs/react';
+import { Button } from '@/components/base/buttons/button';
 import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { logout } from '@/routes';
 import { send } from '@/routes/verification';
 
-export default function VerifyEmail({ status }: { status?: string }) {
-    return (
-        <>
-            <Head title="Email verification" />
+type VerifyEmailProps = {
+    status?: string;
+};
 
-            {status === 'verification-link-sent' && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    A new verification link has been sent to the email address
-                    you provided during registration.
-                </div>
+const VerifyEmail = ({ status }: VerifyEmailProps) => (
+    <>
+        <Head title="Verifica email" />
+
+        {status === 'verification-link-sent' && (
+            <p className="text-center text-sm font-medium text-success-primary">
+                Un nuovo link di verifica è stato inviato all'indirizzo email
+                fornito durante la registrazione.
+            </p>
+        )}
+
+        <Form {...send.form()} className="flex flex-col items-center gap-6">
+            {({ processing }) => (
+                <>
+                    <Button
+                        type="submit"
+                        color="secondary"
+                        size="lg"
+                        className="w-full"
+                        isDisabled={processing}
+                        isLoading={processing}
+                    >
+                        Reinvia email di verifica
+                    </Button>
+
+                    <TextLink href={logout()} className="text-sm">
+                        Esci
+                    </TextLink>
+                </>
             )}
-
-            <Form {...send.form()} className="space-y-6 text-center">
-                {({ processing }) => (
-                    <>
-                        <Button disabled={processing} variant="secondary">
-                            {processing && <Spinner />}
-                            Resend verification email
-                        </Button>
-
-                        <TextLink
-                            href={logout()}
-                            className="mx-auto block text-sm"
-                        >
-                            Log out
-                        </TextLink>
-                    </>
-                )}
-            </Form>
-        </>
-    );
-}
+        </Form>
+    </>
+);
 
 VerifyEmail.layout = {
-    title: 'Email verification',
+    title: 'Verifica email',
     description:
-        'Please verify your email address by clicking on the link we just emailed to you.',
+        'Verifica il tuo indirizzo email cliccando sul link che ti abbiamo appena inviato.',
 };
+
+export default VerifyEmail;

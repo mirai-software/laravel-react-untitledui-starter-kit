@@ -1,13 +1,11 @@
 import type { UrlMethodPair } from '@inertiajs/core';
 import { router } from '@inertiajs/react';
 import { usePasskeyVerify } from '@laravel/passkeys/react';
-import { KeyRound } from 'lucide-react';
+import { Key01 } from '@untitledui/icons';
+import { Button } from '@/components/base/buttons/button';
 import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Spinner } from '@/components/ui/spinner';
 
-type Props = {
+type PasskeyVerifyProps = {
     routes?: {
         options: UrlMethodPair;
         submit: UrlMethodPair;
@@ -17,12 +15,12 @@ type Props = {
     separator?: string;
 };
 
-export default function PasskeyVerify({
+const PasskeyVerify = ({
     routes,
-    label,
-    loadingLabel,
-    separator,
-}: Props = {}) {
+    label = 'Accedi con una passkey',
+    loadingLabel = 'Autenticazione in corso…',
+    separator = "Oppure continua con l'email",
+}: PasskeyVerifyProps = {}) => {
     const { verify, isLoading, error, isSupported } = usePasskeyVerify({
         ...(routes && {
             routes: {
@@ -40,35 +38,33 @@ export default function PasskeyVerify({
     }
 
     return (
-        <>
-            <div className="grid gap-2">
+        <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
                 <Button
                     type="button"
-                    variant="outline"
+                    color="secondary"
+                    size="lg"
                     className="w-full"
-                    onClick={verify}
-                    disabled={isLoading}
+                    iconLeading={Key01}
+                    onPress={() => {
+                        void verify();
+                    }}
+                    isDisabled={isLoading}
+                    isLoading={isLoading}
+                    showTextWhileLoading
                 >
-                    {isLoading ? <Spinner /> : <KeyRound className="h-4 w-4" />}
-                    {isLoading
-                        ? (loadingLabel ?? 'Authenticating...')
-                        : (label ?? 'Sign in with a passkey')}
+                    {isLoading ? loadingLabel : label}
                 </Button>
-                {error && (
-                    <InputError message={error} className="text-center" />
-                )}
+                <InputError message={error} className="text-center" />
             </div>
 
-            <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                    <Separator className="w-full" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">
-                        {separator ?? 'Or continue with email'}
-                    </span>
-                </div>
+            <div className="flex items-center gap-3">
+                <div className="h-px flex-1 bg-border-secondary" />
+                <span className="text-sm text-tertiary">{separator}</span>
+                <div className="h-px flex-1 bg-border-secondary" />
             </div>
-        </>
+        </div>
     );
-}
+};
+
+export default PasskeyVerify;

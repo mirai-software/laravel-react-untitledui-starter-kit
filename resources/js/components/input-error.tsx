@@ -1,17 +1,19 @@
 import type { HTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
+import { cx } from '@/utils/cx';
 
-export default function InputError({
-    message,
-    className = '',
-    ...props
-}: HTMLAttributes<HTMLParagraphElement> & { message?: string }) {
-    return message ? (
-        <p
-            {...props}
-            className={cn('text-sm text-red-600 dark:text-red-400', className)}
-        >
+type InputErrorProps = HTMLAttributes<HTMLParagraphElement> & {
+    message?: string | null;
+};
+
+/**
+ * Error message for fields that can't show it as their own hint
+ * (for example the PIN input or the passkey button).
+ */
+const InputError = ({ message, className, ...props }: InputErrorProps) =>
+    message ? (
+        <p {...props} className={cx('text-sm text-error-primary', className)}>
             {message}
         </p>
     ) : null;
-}
+
+export default InputError;
