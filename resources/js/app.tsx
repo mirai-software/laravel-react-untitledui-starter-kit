@@ -1,4 +1,5 @@
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
+import { RouterProvider } from 'react-aria-components';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -24,11 +25,18 @@ void createInertiaApp({
     },
     strictMode: true,
     withApp(app) {
+        // Untitled UI links (React Aria) navigate with Inertia instead of reloading the page.
         return (
-            <TooltipProvider delayDuration={0}>
-                {app}
-                <Toaster />
-            </TooltipProvider>
+            <RouterProvider
+                navigate={(href) => {
+                    router.visit(href);
+                }}
+            >
+                <TooltipProvider delayDuration={0}>
+                    {app}
+                    <Toaster />
+                </TooltipProvider>
+            </RouterProvider>
         );
     },
     progress: {
