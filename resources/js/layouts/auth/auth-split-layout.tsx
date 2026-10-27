@@ -3,19 +3,39 @@ import AppLogoIcon from '@/components/app-logo-icon';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
+/**
+ * Auth layout with the Mirai brand panel on large screens.
+ * The brand link shows the app name from config; the tagline and footer credit Mirai.
+ */
 const AuthSplitLayout = ({ children, title, description }: AuthLayoutProps) => {
     const { name } = usePage().props;
 
     return (
         <div className="grid min-h-svh bg-primary lg:grid-cols-2">
-            <div className="hidden flex-col bg-primary-solid p-10 lg:flex">
+            <div className="relative hidden flex-col justify-between overflow-hidden bg-primary-solid p-10 lg:flex dark:border-r dark:border-secondary">
+                <div className="absolute -top-24 -right-24 size-96 rounded-full bg-white/5 blur-3xl" />
+
                 <Link
                     href={home()}
-                    className="flex items-center gap-2 self-start rounded-md text-lg font-semibold text-white outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="relative flex items-center gap-2 self-start rounded-md text-lg font-semibold text-white outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                     <AppLogoIcon className="size-8 fill-current text-white" />
                     {name}
                 </Link>
+
+                <div className="relative max-w-md">
+                    <h2 className="text-display-sm font-semibold tracking-tight text-balance text-white">
+                        Software su misura.
+                    </h2>
+                    <p className="mt-3 text-lg text-balance text-white/70">
+                        Progettiamo e sviluppiamo applicazioni web su misura,
+                        dal cuore di Aversa.
+                    </p>
+                </div>
+
+                <p className="relative text-sm text-white/50">
+                    © {new Date().getFullYear()} Mirai · Aversa (CE)
+                </p>
             </div>
 
             <div className="flex flex-col items-center justify-center px-4 py-12 sm:px-8">
