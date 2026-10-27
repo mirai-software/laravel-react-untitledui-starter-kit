@@ -52,8 +52,8 @@ const TwoFactorChallenge = () => {
             <Form
                 {...store.form()}
                 className="flex flex-col gap-6"
-                resetOnError
-                resetOnSuccess={!showRecoveryInput}
+                // Inertia's `resetOnError` can't clear the PIN input (its value is React state).
+                onError={() => setCode('')}
             >
                 {({ errors, processing, clearErrors }) => (
                     <>
@@ -70,7 +70,7 @@ const TwoFactorChallenge = () => {
                         ) : (
                             <div className="flex flex-col items-center gap-2">
                                 <PinInput
-                                    size="md"
+                                    size="xs"
                                     disabled={processing}
                                     invalid={Boolean(errors.code)}
                                 >

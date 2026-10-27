@@ -1,5 +1,5 @@
 import { createInertiaApp, router } from '@inertiajs/react';
-import { RouterProvider } from 'react-aria-components';
+import { FormContext, RouterProvider } from 'react-aria-components';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
@@ -32,10 +32,14 @@ void createInertiaApp({
                     router.visit(href);
                 }}
             >
-                <TooltipProvider delayDuration={0}>
-                    {app}
-                    <Toaster />
-                </TooltipProvider>
+                {/* Laravel validates the forms: React Aria fields only show the server errors (`isInvalid`)
+                    and must not block the browser's submit, which "native" validation does until the error clears. */}
+                <FormContext.Provider value={{ validationBehavior: 'aria' }}>
+                    <TooltipProvider delayDuration={0}>
+                        {app}
+                        <Toaster />
+                    </TooltipProvider>
+                </FormContext.Provider>
             </RouterProvider>
         );
     },
