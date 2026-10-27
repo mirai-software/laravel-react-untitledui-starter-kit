@@ -48,7 +48,10 @@ const applyTheme = (appearance: Appearance): void => {
 
     const isDark = isDarkMode(appearance);
 
+    // shadcn/ui switches on `.dark`, Untitled UI on `.dark-mode`.
+    // Drop `.dark` once no page uses components/ui.
     document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.classList.toggle('dark-mode', isDark);
     document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
 };
 
