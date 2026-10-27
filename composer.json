@@ -1,8 +1,8 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/react-starter-kit",
+    "name": "mirai-software/laravel-react-untitledui-starter-kit",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "Core base Mirai: Laravel + React + Inertia + Untitled UI con auth, ruoli/permessi e gestione utenti.",
     "keywords": [
         "laravel",
         "framework"
