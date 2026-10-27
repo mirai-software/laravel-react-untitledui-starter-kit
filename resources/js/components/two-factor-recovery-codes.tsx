@@ -1,28 +1,22 @@
 import { Form } from '@inertiajs/react';
-import { Eye, EyeOff, LockKeyhole, RefreshCw } from 'lucide-react';
+import { Eye, EyeOff, Lock01, RefreshCw01 } from '@untitledui/icons';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import AlertError from '@/components/alert-error';
-import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Button } from '@/components/base/buttons/button';
 import { regenerateRecoveryCodes } from '@/routes/two-factor';
+import { cx } from '@/utils/cx';
 
-type Props = {
+type TwoFactorRecoveryCodesProps = {
     recoveryCodesList: string[];
     fetchRecoveryCodes: () => Promise<void>;
     errors: string[];
 };
 
-export default function TwoFactorRecoveryCodes({
+const TwoFactorRecoveryCodes = ({
     recoveryCodesList,
     fetchRecoveryCodes,
     errors,
-}: Props) {
+}: TwoFactorRecoveryCodesProps) => {
     const [codesAreVisible, setCodesAreVisible] = useState<boolean>(false);
     const codesSectionRef = useRef<HTMLDivElement | null>(null);
     const canRegenerateCodes = recoveryCodesList.length > 0 && codesAreVisible;
@@ -50,115 +44,127 @@ export default function TwoFactorRecoveryCodes({
         }
     }, [recoveryCodesList.length, fetchRecoveryCodes]);
 
-    const RecoveryCodeIconComponent = codesAreVisible ? EyeOff : Eye;
-
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex gap-3">
-                    <LockKeyhole className="size-4" aria-hidden="true" />
-                    2FA recovery codes
-                </CardTitle>
-                <CardDescription>
-                    Recovery codes let you regain access if you lose your 2FA
-                    device. Store them in a secure password manager.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex flex-col gap-3 select-none sm:flex-row sm:items-center sm:justify-between">
-                    <Button
-                        onClick={toggleCodesVisibility}
-                        className="w-fit"
-                        aria-expanded={codesAreVisible}
-                        aria-controls="recovery-codes-section"
-                    >
-                        <RecoveryCodeIconComponent
-                            className="size-4"
-                            aria-hidden="true"
-                        />
-                        {codesAreVisible ? 'Hide' : 'View'} recovery codes
-                    </Button>
+        <div className="flex w-full flex-col gap-5 rounded-xl bg-primary p-5 shadow-xs ring-1 ring-secondary ring-inset">
+            <div className="flex flex-col gap-1">
+                <h3 className="flex items-center gap-2 text-md font-semibold text-primary">
+                    <Lock01
+                        className="size-4 text-fg-quaternary"
+                        aria-hidden="true"
+                    />
+                    Codici di recupero 2FA
+                </h3>
+                <p className="text-sm text-tertiary">
+                    I codici di recupero ti permettono di riottenere l'accesso
+                    se perdi il dispositivo per la 2FA. Conservali in un gestore
+                    di password sicuro.
+                </p>
+            </div>
 
-                    {canRegenerateCodes && (
-                        <Form
-                            {...regenerateRecoveryCodes.form()}
-                            options={{ preserveScroll: true }}
-                            onSuccess={fetchRecoveryCodes}
-                        >
-                            {({ processing }) => (
-                                <Button
-                                    variant="secondary"
-                                    type="submit"
-                                    disabled={processing}
-                                    aria-describedby="regenerate-warning"
-                                >
-                                    <RefreshCw /> Regenerate codes
-                                </Button>
-                            )}
-                        </Form>
+            <div className="flex flex-col gap-3 select-none sm:flex-row sm:items-center sm:justify-between">
+                <Button
+                    color="secondary"
+                    iconLeading={codesAreVisible ? EyeOff : Eye}
+                    onPress={() => {
+                        void toggleCodesVisibility();
+                    }}
+                    aria-expanded={codesAreVisible}
+                    aria-controls="recovery-codes-section"
+                    className="w-fit"
+                >
+                    {codesAreVisible ? 'Nascondi' : 'Mostra'} codici di recupero
+                </Button>
+
+                {canRegenerateCodes && (
+                    <Form
+                        {...regenerateRecoveryCodes.form()}
+                        options={{ preserveScroll: true }}
+                        onSuccess={() => {
+                            void fetchRecoveryCodes();
+                        }}
+                    >
+                        {({ processing }) => (
+                            <Button
+                                type="submit"
+                                color="secondary"
+                                iconLeading={RefreshCw01}
+                                isDisabled={processing}
+                                isLoading={processing}
+                                aria-describedby="regenerate-warning"
+                            >
+                                Rigenera codici
+                            </Button>
+                        )}
+                    </Form>
+                )}
+            </div>
+
+            <div
+                id="recovery-codes-section"
+                className={cx(
+                    'relative overflow-hidden transition-all duration-300',
+                    codesAreVisible ? 'h-auto opacity-100' : 'h-0 opacity-0',
+                )}
+                aria-hidden={!codesAreVisible}
+            >
+                <div className="flex flex-col gap-3">
+                    {errors.length ? (
+                        <AlertError errors={errors} />
+                    ) : (
+                        <>
+                            <div
+                                ref={codesSectionRef}
+                                className="grid gap-1 rounded-lg bg-secondary p-4 font-mono text-sm text-primary"
+                                role="list"
+                                aria-label="Codici di recupero"
+                            >
+                                {recoveryCodesList.length ? (
+                                    recoveryCodesList.map((code) => (
+                                        <div
+                                            key={code}
+                                            role="listitem"
+                                            className="select-text"
+                                        >
+                                            {code}
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div
+                                        className="flex flex-col gap-2"
+                                        aria-label="Caricamento dei codici di recupero"
+                                    >
+                                        {Array.from(
+                                            { length: 8 },
+                                            (_, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="h-4 animate-pulse rounded bg-quaternary"
+                                                    aria-hidden="true"
+                                                />
+                                            ),
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <p
+                                id="regenerate-warning"
+                                className="text-xs text-tertiary select-none"
+                            >
+                                Ogni codice di recupero può essere usato una
+                                sola volta per accedere al tuo account e viene
+                                poi rimosso. Se te ne servono altri, usa{' '}
+                                <span className="font-semibold">
+                                    Rigenera codici
+                                </span>{' '}
+                                qui sopra.
+                            </p>
+                        </>
                     )}
                 </div>
-                <div
-                    id="recovery-codes-section"
-                    className={`relative overflow-hidden transition-all duration-300 ${codesAreVisible ? 'h-auto opacity-100' : 'h-0 opacity-0'}`}
-                    aria-hidden={!codesAreVisible}
-                >
-                    <div className="mt-3 space-y-3">
-                        {errors?.length ? (
-                            <AlertError errors={errors} />
-                        ) : (
-                            <>
-                                <div
-                                    ref={codesSectionRef}
-                                    className="grid gap-1 rounded-lg bg-muted p-4 font-mono text-sm"
-                                    role="list"
-                                    aria-label="Recovery codes"
-                                >
-                                    {recoveryCodesList.length ? (
-                                        recoveryCodesList.map((code, index) => (
-                                            <div
-                                                key={index}
-                                                role="listitem"
-                                                className="select-text"
-                                            >
-                                                {code}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div
-                                            className="space-y-2"
-                                            aria-label="Loading recovery codes"
-                                        >
-                                            {Array.from(
-                                                { length: 8 },
-                                                (_, index) => (
-                                                    <div
-                                                        key={index}
-                                                        className="h-4 animate-pulse rounded bg-muted-foreground/20"
-                                                        aria-hidden="true"
-                                                    />
-                                                ),
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div className="text-xs text-muted-foreground select-none">
-                                    <p id="regenerate-warning">
-                                        Each recovery code can be used once to
-                                        access your account and will be removed
-                                        after use. If you need more, click{' '}
-                                        <span className="font-bold">
-                                            Regenerate codes
-                                        </span>{' '}
-                                        above.
-                                    </p>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
-}
+};
+
+export default TwoFactorRecoveryCodes;

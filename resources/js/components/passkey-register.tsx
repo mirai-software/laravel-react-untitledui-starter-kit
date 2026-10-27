@@ -1,37 +1,44 @@
 import { usePasskeyRegister } from '@laravel/passkeys/react';
+import { Plus } from '@untitledui/icons';
+import type { FormEvent } from 'react';
 import { useState } from 'react';
+import { Button } from '@/components/base/buttons/button';
+import { Input } from '@/components/base/input/input';
 import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 
-type Props = {
+type PasskeyRegistrationProps = {
     onSuccess: () => void;
 };
 
-export default function PasskeyRegistration({ onSuccess }: Props) {
-    const [name, setName] = useState(() => {
-        const ua = navigator.userAgent;
+/** A default name like "Chrome su Mac", guessed from the user agent. */
+const guessPasskeyName = (): string => {
+    if (typeof navigator === 'undefined') {
+        return '';
+    }
 
-        const browser = [
-            { pattern: /Edg|Edge/, name: 'Edge' },
-            { pattern: /OPR|Opera|OPiOS/, name: 'Opera' },
-            { pattern: /Firefox|FxiOS/, name: 'Firefox' },
-            { pattern: /Chrome|CriOS/, name: 'Chrome' },
-            { pattern: /Safari/, name: 'Safari' },
-        ].find(({ pattern }) => pattern.test(ua))?.name;
+    const ua = navigator.userAgent;
 
-        const os = [
-            { pattern: /iPhone/, name: 'iPhone' },
-            { pattern: /iPad|Macintosh(?=.*Mobile)/, name: 'iPad' },
-            { pattern: /Android/, name: 'Android' },
-            { pattern: /Mac/, name: 'Mac' },
-            { pattern: /Windows/, name: 'Windows' },
-        ].find(({ pattern }) => pattern.test(ua))?.name;
+    const browser = [
+        { pattern: /Edg|Edge/, name: 'Edge' },
+        { pattern: /OPR|Opera|OPiOS/, name: 'Opera' },
+        { pattern: /Firefox|FxiOS/, name: 'Firefox' },
+        { pattern: /Chrome|CriOS/, name: 'Chrome' },
+        { pattern: /Safari/, name: 'Safari' },
+    ].find(({ pattern }) => pattern.test(ua))?.name;
 
-        return [browser, os].filter(Boolean).join(' on ') || '';
-    });
+    const os = [
+        { pattern: /iPhone/, name: 'iPhone' },
+        { pattern: /iPad|Macintosh(?=.*Mobile)/, name: 'iPad' },
+        { pattern: /Android/, name: 'Android' },
+        { pattern: /Mac/, name: 'Mac' },
+        { pattern: /Windows/, name: 'Windows' },
+    ].find(({ pattern }) => pattern.test(ua))?.name;
 
+    return [browser, os].filter(Boolean).join(' su ');
+};
+
+const PasskeyRegistration = ({ onSuccess }: PasskeyRegistrationProps) => {
+    const [name, setName] = useState(guessPasskeyName);
     const [showForm, setShowForm] = useState(false);
     const { register, isLoading, error, isSupported } = usePasskeyRegister({
         onSuccess: () => {
@@ -41,8 +48,8 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
         },
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
 
         if (!name.trim()) {
             return;
@@ -58,51 +65,58 @@ export default function PasskeyRegistration({ onSuccess }: Props) {
 
     if (!isSupported) {
         return (
-            <div className="text-sm text-muted-foreground">
-                Passkeys are not supported in this browser.
-            </div>
+            <p className="text-sm text-tertiary">
+                Le passkey non sono supportate da questo browser.
+            </p>
         );
     }
 
     if (!showForm) {
         return (
-            <Button variant="outline" onClick={() => setShowForm(true)}>
-                Add passkey
-            </Button>
+            <div>
+                <Button
+                    color="secondary"
+                    iconLeading={Plus}
+                    onPress={() => setShowForm(true)}
+                >
+                    Aggiungi passkey
+                </Button>
+            </div>
         );
     }
 
     return (
         <form
-            onSubmit={handleSubmit}
-            className="space-y-4 rounded-lg border border-border bg-muted/50 p-4"
+            onSubmit={(event) => {
+                void handleSubmit(event);
+            }}
+            className="flex flex-col gap-4 rounded-xl bg-secondary p-4"
         >
-            <div className="grid gap-2">
-                <Label htmlFor="passkey-name">Passkey name</Label>
-                <Input
-                    id="passkey-name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g., MacBook Pro, iPhone"
-                    className="mt-1 block w-full border-foreground/20"
-                    autoFocus
-                />
-                <p className="text-xs text-muted-foreground">
-                    A name helps you identify this passkey later.
-                </p>
-            </div>
+            <Input
+                label="Nome della passkey"
+                value={name}
+                onChange={setName}
+                placeholder="es. MacBook Pro, iPhone"
+                hint="Un nome ti aiuta a riconoscere la passkey in seguito."
+                autoFocus
+            />
 
-            {error && <InputError message={error} />}
+            <InputError message={error} />
 
-            <div className="flex gap-2">
-                <Button type="submit" disabled={isLoading || !name.trim()}>
-                    {isLoading ? 'Registering...' : 'Register passkey'}
+            <div className="flex gap-3">
+                <Button
+                    type="submit"
+                    isDisabled={isLoading || !name.trim()}
+                    isLoading={isLoading}
+                >
+                    Registra passkey
                 </Button>
-                <Button type="button" variant="ghost" onClick={handleCancel}>
-                    Cancel
+                <Button color="tertiary" onPress={handleCancel}>
+                    Annulla
                 </Button>
             </div>
         </form>
     );
-}
+};
+
+export default PasskeyRegistration;

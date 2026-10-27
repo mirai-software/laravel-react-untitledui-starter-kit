@@ -1,78 +1,72 @@
 import { Link } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
-import { cn, toUrl } from '@/lib/utils';
+import { toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
 import type { NavItem } from '@/types';
+import { cx } from '@/utils/cx';
 
 const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: edit(),
-        icon: null,
-    },
-    {
-        title: 'Security',
-        href: editSecurity(),
-        icon: null,
-    },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-        icon: null,
-    },
+    { title: 'Profilo', href: edit(), icon: null },
+    { title: 'Sicurezza', href: editSecurity(), icon: null },
+    { title: 'Aspetto', href: editAppearance(), icon: null },
 ];
 
-export default function SettingsLayout({ children }: PropsWithChildren) {
+const SettingsLayout = ({ children }: PropsWithChildren) => {
     const { isCurrentOrParentUrl } = useCurrentUrl();
 
     return (
-        <div className="px-4 py-6">
+        <div className="px-4 py-6 md:px-6 md:py-8">
             <Heading
-                title="Settings"
-                description="Manage your profile and account settings"
+                title="Impostazioni"
+                description="Gestisci il profilo e le impostazioni dell'account"
             />
 
-            <div className="flex flex-col lg:flex-row lg:space-x-12">
-                <aside className="w-full max-w-xl lg:w-48">
+            <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
+                <aside className="w-full lg:w-48 lg:shrink-0">
                     <nav
-                        className="flex flex-col space-y-1 space-x-0"
-                        aria-label="Settings"
+                        className="flex gap-1 overflow-x-auto lg:flex-col"
+                        aria-label="Impostazioni"
                     >
-                        {sidebarNavItems.map((item, index) => (
-                            <Button
-                                key={`${toUrl(item.href)}-${index}`}
-                                size="sm"
-                                variant="ghost"
-                                asChild
-                                className={cn('w-full justify-start', {
-                                    'bg-muted': isCurrentOrParentUrl(item.href),
-                                })}
-                            >
-                                <Link href={item.href}>
+                        {sidebarNavItems.map((item) => {
+                            const isActive = isCurrentOrParentUrl(item.href);
+
+                            return (
+                                <Link
+                                    key={toUrl(item.href)}
+                                    href={item.href}
+                                    prefetch
+                                    aria-current={isActive ? 'page' : undefined}
+                                    className={cx(
+                                        'flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold outline-focus-ring transition duration-100 ease-linear focus-visible:outline-2 focus-visible:outline-offset-2',
+                                        isActive
+                                            ? 'bg-secondary text-secondary_hover hover:bg-secondary_hover'
+                                            : 'text-secondary hover:bg-primary_hover hover:text-secondary_hover',
+                                    )}
+                                >
                                     {item.icon && (
-                                        <item.icon className="h-4 w-4" />
+                                        <item.icon className="size-5 text-fg-quaternary" />
                                     )}
                                     {item.title}
                                 </Link>
-                            </Button>
-                        ))}
+                            );
+                        })}
                     </nav>
                 </aside>
 
-                <Separator className="my-6 lg:hidden" />
+                <div className="h-px bg-border-secondary lg:hidden" />
 
-                <div className="flex-1 md:max-w-2xl">
-                    <section className="max-w-xl space-y-12">
+                <div className="min-w-0 flex-1 md:max-w-2xl">
+                    <section className="flex max-w-xl flex-col gap-12">
                         {children}
                     </section>
                 </div>
             </div>
         </div>
     );
-}
+};
+
+export default SettingsLayout;

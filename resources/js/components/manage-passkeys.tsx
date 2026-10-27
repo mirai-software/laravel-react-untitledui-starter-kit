@@ -1,5 +1,5 @@
 import { router } from '@inertiajs/react';
-import { KeyRound } from 'lucide-react';
+import { Key01 } from '@untitledui/icons';
 import { destroy } from '@/actions/Laravel/Passkeys/Http/Controllers/PasskeyRegistrationController';
 import Heading from '@/components/heading';
 import PasskeyItem from '@/components/passkey-item';
@@ -11,21 +11,23 @@ export type Props = {
     passkeys?: Passkey[];
 };
 
-const EmptyState = () => {
-    return (
-        <div className="p-8 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-                <KeyRound className="h-7 w-7 text-muted-foreground" />
-            </div>
-            <p className="font-medium">No passkeys yet</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-                Add a passkey to sign in without a password
+const EmptyState = () => (
+    <div className="flex flex-col items-center gap-3 p-8 text-center">
+        <div className="flex size-12 items-center justify-center rounded-xl bg-primary shadow-xs ring-1 ring-primary ring-inset">
+            <Key01 className="size-6 text-fg-secondary" />
+        </div>
+        <div className="flex flex-col gap-1">
+            <p className="text-md font-semibold text-primary">
+                Nessuna passkey
+            </p>
+            <p className="text-sm text-tertiary">
+                Aggiungi una passkey per accedere senza password
             </p>
         </div>
-    );
-};
+    </div>
+);
 
-export default function ManagePasskeys(props: Props) {
+const ManagePasskeys = (props: Props) => {
     const passkeys = props.passkeys ?? [];
 
     const handleDelete = (id: number, onError: () => void) => {
@@ -44,14 +46,14 @@ export default function ManagePasskeys(props: Props) {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
             <Heading
                 variant="small"
-                title="Passkeys"
-                description="Manage your passkeys for passwordless sign-in"
+                title="Passkey"
+                description="Gestisci le passkey per accedere senza password"
             />
 
-            <div className="overflow-hidden rounded-lg border border-border">
+            <div className="divide-y divide-secondary overflow-hidden rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
                 {passkeys.length > 0 ? (
                     passkeys.map((passkey) => (
                         <PasskeyItem
@@ -68,4 +70,6 @@ export default function ManagePasskeys(props: Props) {
             <PasskeyRegistration onSuccess={handleRegisterSuccess} />
         </div>
     );
-}
+};
+
+export default ManagePasskeys;

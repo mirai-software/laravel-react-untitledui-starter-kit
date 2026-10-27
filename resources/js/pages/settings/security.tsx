@@ -1,38 +1,42 @@
 import { Form, Head } from '@inertiajs/react';
 import { useRef } from 'react';
 import SecurityController from '@/actions/App/Http/Controllers/Settings/SecurityController';
+import { Button } from '@/components/base/buttons/button';
 import Heading from '@/components/heading';
-import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { edit } from '@/routes/security';
 import type { Props as ManagePasskeysProps } from '@/components/manage-passkeys';
 import ManagePasskeys from '@/components/manage-passkeys';
 import type { Props as ManageTwoFactorProps } from '@/components/manage-two-factor';
 import ManageTwoFactor from '@/components/manage-two-factor';
+import PasswordInput from '@/components/password-input';
+import { edit } from '@/routes/security';
 
 // oxfmt-ignore
-type Props = {
+type SecurityProps = {
     passwordRules: string;
 } & ManagePasskeysProps &
     ManageTwoFactorProps;
 
-export default function Security(props: Props) {
+const Security = (props: SecurityProps) => {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
+    // Inertia's `resetOnError` / `resetOnSuccess` don't clear React Aria fields (React Aria ignores
+    // Inertia's cancelled `reset` event); a native form reset does.
+    const clearPasswordFields = (): void => {
+        currentPasswordInput.current?.form?.reset();
+    };
+
     return (
         <>
-            <Head title="Security settings" />
+            <Head title="Impostazioni sicurezza" />
 
-            <h1 className="sr-only">Security settings</h1>
+            <h1 className="sr-only">Impostazioni sicurezza</h1>
 
-            <div className="space-y-6">
+            <div className="flex flex-col gap-6">
                 <Heading
                     variant="small"
-                    title="Update password"
-                    description="Ensure your account is using a long, random password to stay secure"
+                    title="Aggiorna password"
+                    description="Usa una password lunga e casuale per tenere al sicuro il tuo account"
                 />
 
                 <Form
@@ -40,13 +44,10 @@ export default function Security(props: Props) {
                     options={{
                         preserveScroll: true,
                     }}
-                    resetOnError={[
-                        'password',
-                        'password_confirmation',
-                        'current_password',
-                    ]}
-                    resetOnSuccess
+                    onSuccess={clearPasswordFields}
                     onError={(errors) => {
+                        clearPasswordFields();
+
                         if (errors.password) {
                             passwordInput.current?.focus();
                         }
@@ -55,68 +56,51 @@ export default function Security(props: Props) {
                             currentPasswordInput.current?.focus();
                         }
                     }}
-                    className="space-y-6"
+                    className="flex flex-col gap-6"
                 >
                     {({ errors, processing }) => (
                         <>
-                            <div className="grid gap-2">
-                                <Label htmlFor="current_password">
-                                    Current password
-                                </Label>
+                            <PasswordInput
+                                ref={currentPasswordInput}
+                                name="current_password"
+                                label="Password attuale"
+                                autoComplete="current-password"
+                                placeholder="••••••••"
+                                isInvalid={Boolean(errors.current_password)}
+                                hint={errors.current_password}
+                            />
 
-                                <PasswordInput
-                                    id="current_password"
-                                    ref={currentPasswordInput}
-                                    name="current_password"
-                                    className="mt-1 block w-full"
-                                    autoComplete="current-password"
-                                    placeholder="Current password"
-                                />
+                            <PasswordInput
+                                ref={passwordInput}
+                                name="password"
+                                label="Nuova password"
+                                autoComplete="new-password"
+                                placeholder="••••••••"
+                                passwordrules={props.passwordRules}
+                                isInvalid={Boolean(errors.password)}
+                                hint={errors.password}
+                            />
 
-                                <InputError message={errors.current_password} />
-                            </div>
+                            <PasswordInput
+                                name="password_confirmation"
+                                label="Conferma password"
+                                autoComplete="new-password"
+                                placeholder="••••••••"
+                                passwordrules={props.passwordRules}
+                                isInvalid={Boolean(
+                                    errors.password_confirmation,
+                                )}
+                                hint={errors.password_confirmation}
+                            />
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">New password</Label>
-
-                                <PasswordInput
-                                    id="password"
-                                    ref={passwordInput}
-                                    name="password"
-                                    className="mt-1 block w-full"
-                                    autoComplete="new-password"
-                                    placeholder="New password"
-                                    passwordrules={props.passwordRules}
-                                />
-
-                                <InputError message={errors.password} />
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirm password
-                                </Label>
-
-                                <PasswordInput
-                                    id="password_confirmation"
-                                    name="password_confirmation"
-                                    className="mt-1 block w-full"
-                                    autoComplete="new-password"
-                                    placeholder="Confirm password"
-                                    passwordrules={props.passwordRules}
-                                />
-
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
-                            </div>
-
-                            <div className="flex items-center gap-4">
+                            <div>
                                 <Button
-                                    disabled={processing}
+                                    type="submit"
+                                    isDisabled={processing}
+                                    isLoading={processing}
                                     data-test="update-password-button"
                                 >
-                                    Save
+                                    Salva password
                                 </Button>
                             </div>
                         </>
@@ -136,13 +120,15 @@ export default function Security(props: Props) {
             />
         </>
     );
-}
+};
 
 Security.layout = {
     breadcrumbs: [
         {
-            title: 'Security settings',
+            title: 'Impostazioni sicurezza',
             href: edit(),
         },
     ],
 };
+
+export default Security;
