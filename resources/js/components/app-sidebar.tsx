@@ -1,5 +1,5 @@
 import { Link } from '@inertiajs/react';
-import { Grid01, X as CloseIcon } from '@untitledui/icons';
+import { Grid01, Shield01, Users01, X as CloseIcon } from '@untitledui/icons';
 import {
     Button as AriaButton,
     Dialog as AriaDialog,
@@ -12,12 +12,11 @@ import { NavList } from '@/components/application/app-navigation/base-components
 import type { NavItemType } from '@/components/application/app-navigation/config';
 import { NavUser } from '@/components/nav-user';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { usePermissions } from '@/hooks/use-permissions';
 import { dashboard } from '@/routes';
+import { index as rolesIndex } from '@/routes/roles';
+import { index as usersIndex } from '@/routes/users';
 import { cx } from '@/utils/cx';
-
-const mainNavItems: NavItemType[] = [
-    { label: 'Dashboard', href: dashboard().url, icon: Grid01 },
-];
 
 /** The nav item for the current page, also when it's a sub-page (e.g. `/users/1/edit`). */
 const findActiveHref = (
@@ -33,6 +32,17 @@ const findActiveHref = (
 
 const SidebarContent = () => {
     const { currentUrl } = useCurrentUrl();
+    const { can } = usePermissions();
+
+    const mainNavItems: NavItemType[] = [
+        { label: 'Dashboard', href: dashboard().url, icon: Grid01 },
+        ...(can('roles.view')
+            ? [{ label: 'Ruoli', href: rolesIndex().url, icon: Shield01 }]
+            : []),
+        ...(can('users.view')
+            ? [{ label: 'Utenti', href: usersIndex().url, icon: Users01 }]
+            : []),
+    ];
 
     return (
         <div className="flex h-full flex-col bg-primary pt-5">

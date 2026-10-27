@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { Grid01, Menu02 } from '@untitledui/icons';
+import { Grid01, Menu02, Shield01, Users01 } from '@untitledui/icons';
 import { Button as AriaButton } from 'react-aria-components';
 import AppLogo from '@/components/app-logo';
 import { SlideoutMenu } from '@/components/application/slideout-menus/slideout-menu';
@@ -10,13 +10,12 @@ import { Breadcrumbs } from '@/components/breadcrumbs';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
+import { usePermissions } from '@/hooks/use-permissions';
 import { dashboard } from '@/routes';
+import { index as rolesIndex } from '@/routes/roles';
+import { index as usersIndex } from '@/routes/users';
 import type { BreadcrumbItem, NavItem } from '@/types';
 import { cx } from '@/utils/cx';
-
-const mainNavItems: NavItem[] = [
-    { title: 'Dashboard', href: dashboard(), icon: Grid01 },
-];
 
 const navLinkStyles =
     'flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold outline-focus-ring transition duration-100 ease-linear focus-visible:outline-2 focus-visible:outline-offset-2';
@@ -29,6 +28,17 @@ const AppHeader = ({ breadcrumbs = [] }: AppHeaderProps) => {
     const { auth } = usePage().props;
     const getInitials = useInitials();
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { can } = usePermissions();
+
+    const mainNavItems: NavItem[] = [
+        { title: 'Dashboard', href: dashboard(), icon: Grid01 },
+        ...(can('roles.view')
+            ? [{ title: 'Ruoli', href: rolesIndex(), icon: Shield01 }]
+            : []),
+        ...(can('users.view')
+            ? [{ title: 'Utenti', href: usersIndex(), icon: Users01 }]
+            : []),
+    ];
 
     return (
         <>
