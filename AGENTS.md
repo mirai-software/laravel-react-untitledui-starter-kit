@@ -204,3 +204,21 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - IMPORTANT: Activate `inertia-react-development` when working with Inertia React client-side patterns.
 
 </laravel-boost-guidelines>
+
+# Convenzioni di progetto
+
+## Frontend (React / TypeScript)
+
+- **Componenti come arrow function, sempre** — root, sub-componenti dei compound, helper privati e inline. Mai `function MyComponent() {}`.
+  - Named export: `const X = (...) => (...); export { X };`
+  - Default export: `const X = (...) => (...); export default X;`
+- **Alias `@/`** per gli import da `resources/js` (es. `@/components/...`, `@/hooks/...`, `@/routes/...`). Niente percorsi relativi profondi (`../../..`).
+- **Niente `any`** — tipizzare esplicitamente. In caso di tipo davvero ignoto usare `unknown` e restringere.
+- **Niente non-null assertion (`!`)** — gestire i casi nulli con guardie, optional chaining o default. (Il postfix `!` di Tailwind 4 per `!important`, es. `text-white!`, è un'altra cosa ed è consentito.)
+- **Rotte tramite Wayfinder**: importare gli helper da `@/routes/...` (rotte con nome) o `@/actions/...` (controller). Non hardcodare i path; dopo modifiche alle rotte rigenerare con `vendor/bin/sail artisan wayfinder:generate --with-form`.
+- **UI in italiano**: le stringhe rivolte all'utente vanno in italiano.
+
+## Workflow
+
+- Eseguire i comandi nel container come utente `sail` (`vendor/bin/sail …`), mai `docker exec` come root.
+- Prima di chiudere: `vendor/bin/sail composer test` (Pint, PHPStan e test), `vendor/bin/sail npm run check` (formattazione e lint con Vite+) e `vendor/bin/sail npm run types:check`.
