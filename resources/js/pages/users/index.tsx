@@ -68,7 +68,7 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
                     }
                 />
 
-                <div className="overflow-x-auto rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
+                <div className="relative overflow-x-auto rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
                     <table className="w-full text-left text-sm">
                         <thead>
                             <tr className="border-b border-secondary bg-secondary text-xs font-semibold text-quaternary">
