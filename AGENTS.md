@@ -216,7 +216,17 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - **Niente `any`** — tipizzare esplicitamente. In caso di tipo davvero ignoto usare `unknown` e restringere.
 - **Niente non-null assertion (`!`)** — gestire i casi nulli con guardie, optional chaining o default. (Il postfix `!` di Tailwind 4 per `!important`, es. `text-white!`, è un'altra cosa ed è consentito.)
 - **Rotte tramite Wayfinder**: importare gli helper da `@/routes/...` (rotte con nome) o `@/actions/...` (controller). Non hardcodare i path; dopo modifiche alle rotte rigenerare con `vendor/bin/sail artisan wayfinder:generate --with-form`.
+- **Permessi lato client** tramite l'hook `usePermissions()` (permessi condivisi da `HandleInertiaRequests` in `auth.permissions`); non rileggere `auth.permissions` a mano.
+- **Form con campi React Aria (Untitled UI)**: per svuotare i campi dopo l'invio usare il `form.reset()` nativo in `onError`/`onSuccess`; `resetOnError`/`resetOnSuccess` di Inertia non li svuotano.
 - **UI in italiano**: le stringhe rivolte all'utente vanno in italiano.
+
+## Backend (PHP / Laravel)
+
+- **Rotte come attributi** ([spatie/laravel-route-attributes](https://github.com/spatie/laravel-route-attributes)) **solo sui nostri controller** (es. `RoleController`, `UserController` in `app/Http/Controllers`). Le rotte dello starter kit ufficiale restano in `routes/*.php`, così gli aggiornamenti da upstream si integrano senza conflitti. Il gruppo `web` è applicato via `config/route-attributes.php`.
+- **Autorizzazione**: il ruolo `admin` supera ogni controllo via `Gate::before` (`AppServiceProvider`). Policy e `FormRequest` usano i permessi spatie (`users.view`, `roles.update`, …), creati da `RolePermissionSeeder`. Il bypass salta anche le regole delle policy: i vincoli che devono valere anche per l'admin (es. non disattivare sé stessi, non eliminare il ruolo `admin`) vanno verificati esplicitamente nel controller.
+- **Primo utente**: il primo utente che si registra diventa `admin`, i successivi `user` (`CreateNewUser`). Gli utenti disattivati contano come esistenti.
+- **Soft delete utenti**: `User` usa `SoftDeletes`. "Disattiva" = soft delete, reversibile con "Riattiva"; anche "Elimina account" nelle impostazioni disattiva soltanto.
+- **Test** in PHPUnit nello stile di upstream (metodi `test_*`, factory).
 
 ## Workflow
 
