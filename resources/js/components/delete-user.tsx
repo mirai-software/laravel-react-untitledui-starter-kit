@@ -20,14 +20,16 @@ const DeleteUser = () => {
             <Heading
                 variant="small"
                 title="Elimina account"
-                description="Elimina il tuo account e tutti i suoi dati"
+                description="Disattiva il tuo account: non potrai più accedere"
             />
 
             <div className="flex flex-col items-start gap-4 rounded-xl bg-error-primary p-4 ring-1 ring-error_subtle ring-inset">
                 <div className="flex flex-col gap-0.5 text-sm text-error-primary">
                     <p className="font-semibold">Attenzione</p>
                     <p>
-                        Procedi con cautela: l'operazione non si può annullare.
+                        Procedi con cautela: dopo l'eliminazione non potrai più
+                        accedere. Solo un amministratore può riattivare
+                        l'account.
                     </p>
                 </div>
 
@@ -53,9 +55,10 @@ const DeleteUser = () => {
                                                 account?
                                             </AriaHeading>
                                             <p className="text-sm text-tertiary">
-                                                Una volta eliminato l'account,
-                                                tutti i suoi dati verranno
-                                                cancellati definitivamente.
+                                                Il tuo account verrà disattivato
+                                                e non potrai più accedere. I
+                                                dati restano conservati e un
+                                                amministratore può riattivarlo.
                                                 Inserisci la password per
                                                 confermare.
                                             </p>

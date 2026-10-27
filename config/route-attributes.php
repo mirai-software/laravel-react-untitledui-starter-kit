@@ -1,0 +1,54 @@
+<?php
+
+use Illuminate\Routing\Middleware\SubstituteBindings;
+
+return [
+    /*
+     *  Automatic registration of routes will only happen if this setting is `true`
+     */
+    'enabled' => true,
+
+    /*
+     * Controllers in these directories that have routing attributes
+     * will automatically be registered.
+     *
+     * Optionally, you can specify group configuration by using key/values
+     */
+    'directories' => [
+        app_path('Http/Controllers') => [
+            // Web routes need the `web` group (session, CSRF, Inertia shared data).
+            // Only our own controllers (RoleController, UserController) declare
+            // routes as attributes; upstream's controllers keep theirs in routes/*.php
+            // and, having no attributes, register nothing here.
+            'middleware' => 'web',
+        ],
+        /*
+        app_path('Http/Controllers/Api') => [
+           'prefix' => 'api',
+           'middleware' => 'api',
+            // only register routes in files that match the patterns
+           'patterns' => ['*Controller.php'],
+           // do not register routes in files that match the patterns
+           'not_patterns' => [],
+        ],
+        */
+    ],
+
+    /*
+     * This middleware will be applied to all routes.
+     */
+    'middleware' => [
+        SubstituteBindings::class,
+    ],
+
+    /*
+     * When enabled, implicitly scoped bindings will be enabled by default.
+     * You can override this behaviour by using the `ScopeBindings` attribute, and passing `false` to it.
+     *
+     * Possible values:
+     *  - null: use the default behaviour
+     *  - true: enable implicitly scoped bindings for all routes
+     *  - false: disable implicitly scoped bindings for all routes
+     */
+    'scope-bindings' => null,
+];

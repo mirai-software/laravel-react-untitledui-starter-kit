@@ -1,3 +1,14 @@
+/** The permissions seeded by `RolePermissionSeeder`, named `resource.action`. */
+export type AppPermission =
+    | 'roles.view'
+    | 'roles.create'
+    | 'roles.update'
+    | 'roles.delete'
+    | 'users.view'
+    | 'users.create'
+    | 'users.update'
+    | 'users.delete';
+
 export type User = {
     id: number;
     name: string;
@@ -12,6 +23,8 @@ export type User = {
 
 export type Auth = {
     user: User;
+    /** The current user's effective permissions (all of them for `admin`). */
+    permissions: AppPermission[];
 };
 
 export type Passkey = {
