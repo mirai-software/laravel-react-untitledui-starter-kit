@@ -1,63 +1,71 @@
-import { Link, router } from '@inertiajs/react';
-import { LogOut, Settings } from 'lucide-react';
+import { router, usePage } from '@inertiajs/react';
 import {
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
+    LogOut01,
+    Monitor01,
+    Moon01,
+    Settings01,
+    Sun,
+} from '@untitledui/icons';
+import type { FC } from 'react';
+import { Dropdown } from '@/components/base/dropdown/dropdown';
 import { UserInfo } from '@/components/user-info';
-import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
+import type { Appearance } from '@/hooks/use-appearance';
+import { useAppearance } from '@/hooks/use-appearance';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
-import type { User } from '@/types';
 
-type Props = {
-    user: User;
-};
+const themeOptions: {
+    value: Appearance;
+    label: string;
+    icon: FC<{ className?: string }>;
+}[] = [
+    { value: 'light', label: 'Tema chiaro', icon: Sun },
+    { value: 'dark', label: 'Tema scuro', icon: Moon01 },
+    { value: 'system', label: 'Tema di sistema', icon: Monitor01 },
+];
 
-export function UserMenuContent({ user }: Props) {
-    const cleanup = useMobileNavigation();
-
-    const handleLogout = () => {
-        cleanup();
-        router.flushAll();
-    };
+/** Contents of the user dropdown, shared by the sidebar and the header. */
+const UserMenuContent = () => {
+    const { auth } = usePage().props;
+    const { appearance, updateAppearance } = useAppearance();
 
     return (
         <>
-            <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                    <UserInfo user={user} showEmail={true} />
-                </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                    <Link
-                        className="block w-full cursor-pointer"
-                        href={edit()}
-                        prefetch
-                        onClick={cleanup}
-                    >
-                        <Settings className="mr-2" />
-                        Settings
-                    </Link>
-                </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <Link
-                    className="block w-full cursor-pointer"
-                    href={logout()}
-                    as="button"
-                    onClick={handleLogout}
+            <div className="flex items-center gap-3 border-b border-secondary px-4 py-3">
+                <UserInfo user={auth.user} showEmail />
+            </div>
+
+            <Dropdown.Menu>
+                <Dropdown.Item
+                    label="Impostazioni"
+                    icon={Settings01}
+                    href={edit().url}
+                />
+                <Dropdown.Separator />
+                {themeOptions.map((option) => (
+                    <Dropdown.Item
+                        key={option.value}
+                        label={option.label}
+                        icon={option.icon}
+                        addon={
+                            appearance === option.value ? 'Attivo' : undefined
+                        }
+                        onAction={() => updateAppearance(option.value)}
+                    />
+                ))}
+                <Dropdown.Separator />
+                <Dropdown.Item
+                    label="Esci"
+                    icon={LogOut01}
                     data-test="logout-button"
-                >
-                    <LogOut className="mr-2" />
-                    Log out
-                </Link>
-            </DropdownMenuItem>
+                    onAction={() => {
+                        router.flushAll();
+                        router.post(logout().url);
+                    }}
+                />
+            </Dropdown.Menu>
         </>
     );
-}
+};
+
+export { UserMenuContent };

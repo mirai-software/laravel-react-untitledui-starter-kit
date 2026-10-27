@@ -1,22 +1,27 @@
-import * as React from 'react';
-import { SidebarInset } from '@/components/ui/sidebar';
-import type { AppVariant } from '@/types';
+import type { ComponentProps } from 'react';
+import { cx } from '@/utils/cx';
 
-type Props = React.ComponentProps<'main'> & {
-    variant?: AppVariant;
+type AppContentProps = ComponentProps<'main'> & {
+    variant?: 'header' | 'sidebar';
 };
 
-export function AppContent({ variant = 'sidebar', children, ...props }: Props) {
-    if (variant === 'sidebar') {
-        return <SidebarInset {...props}>{children}</SidebarInset>;
-    }
+const AppContent = ({
+    variant = 'header',
+    children,
+    className,
+    ...props
+}: AppContentProps) => (
+    <main
+        className={cx(
+            variant === 'sidebar'
+                ? 'flex min-w-0 flex-1 flex-col'
+                : 'mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4',
+            className,
+        )}
+        {...props}
+    >
+        {children}
+    </main>
+);
 
-    return (
-        <main
-            className="mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl"
-            {...props}
-        >
-            {children}
-        </main>
-    );
-}
+export { AppContent };

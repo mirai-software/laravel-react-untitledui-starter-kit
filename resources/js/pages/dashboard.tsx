@@ -1,30 +1,29 @@
 import { Head } from '@inertiajs/react';
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import { PlaceholderPattern } from '@/components/placeholder-pattern';
 import { dashboard } from '@/routes';
 
-export default function Dashboard() {
-    return (
-        <>
-            <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                </div>
-                <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                </div>
+const Panel = ({ className }: { className?: string }) => (
+    <div
+        className={`relative overflow-hidden rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset ${className ?? ''}`}
+    >
+        <PlaceholderPattern className="absolute inset-0 size-full stroke-fg-quaternary/20" />
+    </div>
+);
+
+const Dashboard = () => (
+    <>
+        <Head title="Dashboard" />
+
+        <div className="flex h-full flex-1 flex-col gap-6 p-4 md:p-6">
+            <div className="grid auto-rows-min gap-6 md:grid-cols-3">
+                <Panel className="aspect-video" />
+                <Panel className="aspect-video" />
+                <Panel className="aspect-video" />
             </div>
-        </>
-    );
-}
+            <Panel className="min-h-[60vh] flex-1 md:min-h-min" />
+        </div>
+    </>
+);
 
 Dashboard.layout = {
     breadcrumbs: [
@@ -34,3 +33,5 @@ Dashboard.layout = {
         },
     ],
 };
+
+export default Dashboard;
