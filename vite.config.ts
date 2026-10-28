@@ -56,6 +56,14 @@ export default defineConfig({
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
         ],
+        // On top of the defaults: the team's TypeScript rules (AGENTS.md) and React's rules of hooks.
+        plugins: ['unicorn', 'typescript', 'oxc', 'react'],
+        rules: {
+            'typescript/no-explicit-any': 'error',
+            'typescript/no-non-null-assertion': 'error',
+            'react/rules-of-hooks': 'error',
+            'react/exhaustive-deps': 'error',
+        },
         options: {
             denyWarnings: true,
             typeAware: true,

@@ -215,6 +215,7 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - **Alias `@/`** per gli import da `resources/js` (es. `@/components/...`, `@/hooks/...`, `@/routes/...`). Niente percorsi relativi profondi (`../../..`).
 - **Niente `any`** — tipizzare esplicitamente. In caso di tipo davvero ignoto usare `unknown` e restringere.
 - **Niente non-null assertion (`!`)** — gestire i casi nulli con guardie, optional chaining o default. (Il postfix `!` di Tailwind 4 per `!important`, es. `text-white!`, è un'altra cosa ed è consentito.)
+- `vendor/bin/sail npm run check` fa rispettare `any`, `!` e le regole degli hook di React (configurate in `vite.config.ts`).
 - **Rotte tramite Wayfinder**: importare gli helper da `@/routes/...` (rotte con nome) o `@/actions/...` (controller). Non hardcodare i path; dopo modifiche alle rotte rigenerare con `vendor/bin/sail artisan wayfinder:generate --with-form`.
 - **Permessi lato client** tramite l'hook `usePermissions()` (permessi condivisi da `HandleInertiaRequests` in `auth.permissions`); non rileggere `auth.permissions` a mano.
 - **Form con campi React Aria (Untitled UI)**: per svuotare i campi dopo l'invio usare il `form.reset()` nativo in `onError`/`onSuccess`; `resetOnError`/`resetOnSuccess` di Inertia non li svuotano.

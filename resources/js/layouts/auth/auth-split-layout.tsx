@@ -3,6 +3,9 @@ import AppLogoIcon from '@/components/app-logo-icon';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
+/** Read once, outside render: a component must render the same output every time (React's purity rule). */
+const currentYear = new Date().getFullYear();
+
 /**
  * Auth layout with the Mirai brand panel on large screens.
  * The brand link shows the app name from config; the tagline and footer credit Mirai.
@@ -34,7 +37,7 @@ const AuthSplitLayout = ({ children, title, description }: AuthLayoutProps) => {
                 </div>
 
                 <p className="relative text-sm text-white/50">
-                    © {new Date().getFullYear()} Mirai · Aversa (CE)
+                    © {currentYear} Mirai · Aversa (CE)
                 </p>
             </div>
 
