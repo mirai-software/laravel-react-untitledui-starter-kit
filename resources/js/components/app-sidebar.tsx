@@ -92,9 +92,9 @@ const AppSidebar = () => {
                     cx(
                         'fixed inset-0 z-50 bg-overlay/70 pr-16 backdrop-blur-md lg:hidden',
                         isEntering &&
-                            'duration-300 ease-in-out animate-in fade-in',
+                            'animate-in duration-300 ease-in-out fade-in',
                         isExiting &&
-                            'duration-200 ease-in-out animate-out fade-out',
+                            'animate-out duration-200 ease-in-out fade-out',
                     )
                 }
             >

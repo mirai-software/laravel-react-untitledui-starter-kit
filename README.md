@@ -107,7 +107,7 @@ mkdir -p resources/js/utils && [ -d utils ] && mv utils/* resources/js/utils/ &&
 grep -rl "@/resources/js/" resources/js | xargs sed -i '' 's#@/resources/js/#@/#g'   # macOS; su Linux: sed -i
 ```
 
-Se la CLI aggiunge un hook in `resources/js/hooks/`, aggiungilo anche alle esclusioni di Vite+ in `vite.config.ts`. Non usare `untitledui init`: il tema (`resources/css/theme.css`, con i colori Mirai) è già configurato.
+Se la CLI aggiunge un hook in `resources/js/hooks/`, aggiungilo anche alle esclusioni di Vite+ in `vite.config.ts`. Non usare `untitledui init`: il tema è già configurato. `resources/css/theme.css` è quello di Untitled UI senza modifiche; i colori del brand stanno in `resources/css/app.css`.
 
 ## Traduzioni
 

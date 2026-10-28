@@ -90,7 +90,7 @@ export default defineConfig({
             'lang/**',
         ],
         sortTailwindcss: {
-            functions: ['clsx', 'cn', 'cva'],
+            functions: ['clsx', 'cn', 'cva', 'cx'],
             stylesheet: 'resources/css/app.css',
         },
     },
