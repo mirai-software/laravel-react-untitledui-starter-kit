@@ -39,11 +39,17 @@ Serve solo **Docker**: PHP, Composer e Node girano nei container di [Sail](https
 
     Lo script installa le dipendenze Composer con un container Docker temporaneo, crea `.env` da `.env.example`, avvia i container (app + Postgres), genera la chiave, esegue le migrazioni, installa e compila il frontend. Si può rilanciare: salta i passaggi già fatti.
 
-3. Apri `http://localhost` e registrati: **il primo utente diventa admin**.
+3. Apri `http://localhost` e registrati: **il primo utente diventa admin**. L'email non parte davvero (`MAIL_MAILER=log`): il link di verifica è nel log, da leggere con `vendor/bin/sail artisan pail` o in `storage/logs/laravel.log`. Per vedere le email in un'interfaccia web si può aggiungere Mailpit con `vendor/bin/sail artisan sail:add mailpit`.
 
-Prima di iniziare, in `.env` imposta almeno `APP_NAME`. Se le porte 80, 5173 o 5432 sono già occupate da un altro progetto, cambia `APP_PORT`, `VITE_PORT` o `FORWARD_DB_PORT`.
+Se le porte 80, 5173 o 5432 sono già occupate da un altro progetto, cambia `APP_PORT`, `VITE_PORT` o `FORWARD_DB_PORT` in `.env` e rilancia `./install.sh`. Cambiando `APP_PORT` aggiorna anche `APP_URL` (es. `http://localhost:8080`): le passkey funzionano solo sull'indirizzo di `APP_URL`.
 
-Il logo (`resources/js/components/app-logo-icon.tsx`) e le favicon in `public/` sono ancora quelli di Laravel: sostituiscili con quelli del progetto.
+### Da personalizzare in ogni progetto
+
+- `.env.example`: `APP_NAME` e `MAIL_FROM_ADDRESS` (è il file che copiano i colleghi e la CI).
+- `composer.json`: `name`, `description` e `license`; `package.json`: `name` (poi `vendor/bin/sail npm install` per aggiornare `package-lock.json`).
+- Questo README: titolo e descrizione del progetto.
+- Il logo (`resources/js/components/app-logo-icon.tsx`) e le favicon in `public/`, che sono ancora quelli di Laravel.
+- I colori del brand in `resources/css/app.css`, se il progetto non usa quelli Mirai; il testo del pannello di accesso in `resources/js/layouts/auth/auth-split-layout.tsx`.
 
 ### Utente di prova e admin
 
@@ -89,6 +95,9 @@ Git applica solo le modifiche arrivate dopo l'ultimo collegamento (un merge "-s 
 
 - le modifiche al backend (config, Fortify, modelli, test) di solito si integrano da sole;
 - le pagine e i componenti riscritti in Untitled UI vanno in conflitto o non ricevono le modifiche dell'interfaccia: lì la modifica di upstream va riportata a mano;
+- upstream non versiona `composer.lock` e `package-lock.json`, noi sì: se il merge cambia `composer.json` o `package.json`, aggiorna i lock (`vendor/bin/sail composer update <pacchetti>`, `vendor/bin/sail npm install`) e committali;
+- i file shadcn nuovi di upstream (`components/ui/*` o pagine che li usano) arrivano senza conflitti ma importano pacchetti che abbiamo tolto: vanno convertiti in Untitled UI o eliminati;
+- i file che abbiamo eliminato (es. `components/ui/*`) danno un conflitto "modificato da upstream, eliminato da noi": si risolve con `git rm`;
 - dopo il merge: tutte le verifiche qui sopra e un giro nel browser.
 
 Per lo stesso motivo conviene restare vicini a upstream: file nuovi invece di modifiche ai file di upstream, stile Pint di default, rotte di upstream nei file `routes/*.php`.
@@ -107,7 +116,7 @@ mkdir -p resources/js/utils && [ -d utils ] && mv utils/* resources/js/utils/ &&
 grep -rl "@/resources/js/" resources/js | xargs sed -i '' 's#@/resources/js/#@/#g'   # macOS; su Linux: sed -i
 ```
 
-Se la CLI aggiunge un hook in `resources/js/hooks/`, aggiungilo anche alle esclusioni di Vite+ in `vite.config.ts`. Non usare `untitledui init`: il tema è già configurato. `resources/css/theme.css` è quello di Untitled UI senza modifiche; i colori del brand stanno in `resources/css/app.css`.
+La CLI aggiunge anche i file vicini e tutto ciò che importano (per esempio `add input` riporta tutte le varianti di input e decine di icone di pagamento) e può reinstallare pacchetti npm. Dopo `add`, guarda `git status` e `git diff package.json`: tieni solo i file che il nostro codice importa, direttamente o tramite altri file tenuti, e togli il resto; `vendor/bin/sail npm run types:check` e `vendor/bin/sail npm run build` segnalano se hai tolto troppo. Se la CLI aggiunge un hook in `resources/js/hooks/`, aggiungilo anche alle esclusioni di Vite+ in `vite.config.ts`. Non usare `untitledui init`: il tema è già configurato. `resources/css/theme.css` è quello di Untitled UI senza modifiche; i colori del brand stanno in `resources/css/app.css`.
 
 ## Traduzioni
 
