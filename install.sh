@@ -56,6 +56,6 @@ vendor/bin/sail npm run build
 
 echo ""
 echo "==> Fatto. Apri http://localhost (o la porta APP_PORT del tuo .env)."
-echo "    Il primo utente che si registra diventa admin. L'email di verifica finisce nel log:"
-echo "    vendor/bin/sail artisan pail (oppure storage/logs/laravel.log)."
+echo "    Crea il tuo account amministratore: vendor/bin/sail artisan app:create-admin"
+echo "    Le email (es. la verifica) finiscono nel log: vendor/bin/sail artisan pail"
 echo "    Per sviluppare con il ricaricamento automatico: vendor/bin/sail npm run dev"

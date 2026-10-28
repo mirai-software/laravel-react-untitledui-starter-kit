@@ -17,7 +17,7 @@ class Role extends SpatieRole
     public const string ADMIN = 'admin';
 
     /**
-     * Given to everyone who registers after the first user (CreateNewUser).
+     * Given to everyone who registers (CreateNewUser); admins come from `php artisan app:create-admin`.
      */
     public const string USER = 'user';
 

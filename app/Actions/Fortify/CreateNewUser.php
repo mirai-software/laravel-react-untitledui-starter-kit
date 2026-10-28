@@ -25,17 +25,14 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        // The first user to register sets up the instance and becomes admin. Deactivated
-        // (soft-deleted) users count too, so deactivating everyone can't hand out admin again.
-        $isFirstUser = User::withTrashed()->doesntExist();
-
         $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => $input['password'],
         ]);
 
-        $user->assignRole(Role::findOrCreate($isFirstUser ? Role::ADMIN : Role::USER, 'web'));
+        // Everyone who registers is a plain user; admins are created with `php artisan app:create-admin`.
+        $user->assignRole(Role::findOrCreate(Role::USER, 'web'));
 
         return $user;
     }

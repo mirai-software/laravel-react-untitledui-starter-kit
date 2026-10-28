@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Users;
 
-use App\Models\Passkey;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
@@ -113,11 +112,16 @@ class UserManagementTest extends TestCase
         $this->assertSame('Nuovo Utente', $created->name);
         $this->assertTrue($created->hasRole('editor'));
         $this->assertTrue(Hash::check('secret-password', $created->password));
-        Notification::assertSentTo($created, VerifyEmail::class);
+
+        if (Features::enabled(Features::emailVerification())) {
+            Notification::assertSentTo($created, VerifyEmail::class);
+        }
     }
 
     public function test_a_failing_verification_email_keeps_the_new_user_and_warns()
     {
+        $this->skipUnlessFortifyHas(Features::emailVerification());
+
         config(['mail.default' => 'rotto', 'mail.mailers.rotto' => ['transport' => 'inesistente']]);
 
         $response = $this->actingAs($this->admin())->post(route('users.store'), $this->validPayload());
@@ -266,7 +270,10 @@ class UserManagementTest extends TestCase
         $target->refresh();
         $this->assertSame('nuova-email@example.com', $target->email);
         $this->assertNull($target->email_verified_at);
-        Notification::assertSentTo($target, VerifyEmail::class);
+
+        if (Features::enabled(Features::emailVerification())) {
+            Notification::assertSentTo($target, VerifyEmail::class);
+        }
     }
 
     public function test_the_password_changes_when_filled_in()
@@ -337,12 +344,15 @@ class UserManagementTest extends TestCase
 
     public function test_deactivated_users_cannot_log_in_with_a_passkey()
     {
+        $this->skipUnlessFortifyHas(Features::passkeys());
+
         $user = User::factory()->create();
         $user->passkeys()->create(['name' => 'Portatile', 'credential_id' => 'credenziale-di-prova', 'credential' => []]);
         $user->delete();
 
-        // A full WebAuthn sign-in needs a real authenticator: check the two steps that decide it.
-        $passkey = Passkey::where('credential_id', 'credenziale-di-prova')->firstOrFail();
+        // A full WebAuthn sign-in needs a real authenticator: check the two steps that decide it,
+        // through the model the passkeys package uses (ours, registered in AppServiceProvider).
+        $passkey = Passkeys::passkeyModel()::where('credential_id', 'credenziale-di-prova')->firstOrFail();
 
         $this->assertTrue($passkey->user?->is($user));
         $this->assertFalse(Passkeys::allowsLogin(request(), $passkey));

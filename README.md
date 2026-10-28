@@ -17,8 +17,8 @@ Lo starter kit interno del team: la base da cui partono i nostri progetti web. �
 
 - **Interfaccia Untitled UI v8** al posto di shadcn/ui, con il tema e i colori del brand Mirai (corallo, `#D97757`), font Inter, tema chiaro/scuro.
 - **Ruoli e permessi** con interfaccia (CRUD ruoli, matrice dei permessi). Il ruolo `admin` supera ogni controllo; la sidebar mostra solo ciò che l'utente può fare.
-- **Gestione utenti**: creazione, modifica, disattivazione (soft delete) e riattivazione. Anche "Elimina account" nelle impostazioni disattiva soltanto.
-- **Il primo utente che si registra diventa `admin`**, i successivi `user`.
+- **Gestione utenti**: creazione, modifica, disattivazione (soft delete) e riattivazione. Anche "Elimina account" nelle impostazioni disattiva soltanto. Solo un admin assegna i ruoli, e nessuno può gestire un account con più permessi dei suoi.
+- **Amministratori creati da terminale** con `php artisan app:create-admin`: chi si registra riceve sempre il ruolo `user`.
 - **Italiano ovunque**: interfaccia, messaggi di validazione e autenticazione, email ([laravel-lang](https://laravel-lang.com)).
 - **Pagine di errore** (403, 404, 429, 500, 503) in stile Untitled UI, in italiano, quando `APP_DEBUG=false`; una pagina scaduta (419) torna indietro con un avviso, senza perdere il form.
 - **Branding Mirai** nella pagina di benvenuto e nelle pagine di accesso.
@@ -39,7 +39,15 @@ Serve solo **Docker**: PHP, Composer e Node girano nei container di [Sail](https
 
     Lo script installa le dipendenze Composer con un container Docker temporaneo, crea `.env` da `.env.example`, avvia i container (app + Postgres), genera la chiave, esegue le migrazioni, installa e compila il frontend. Si può rilanciare: salta i passaggi già fatti.
 
-3. Apri `http://localhost` e registrati: **il primo utente diventa admin**. L'email non parte davvero (`MAIL_MAILER=log`): il link di verifica è nel log, da leggere con `vendor/bin/sail artisan pail` o in `storage/logs/laravel.log`. Per vedere le email in un'interfaccia web si può aggiungere Mailpit con `vendor/bin/sail artisan sail:add mailpit`.
+3. Crea il tuo account amministratore:
+
+    ```bash
+    vendor/bin/sail artisan app:create-admin
+    ```
+
+    Chiede email, nome e password, e crea un admin con l'email già verificata. Poi apri `http://localhost` e accedi.
+
+Chi si registra dal sito riceve il ruolo `user`. L'email di verifica non parte davvero (`MAIL_MAILER=log`): il link di verifica è nel log, da leggere con `vendor/bin/sail artisan pail` o in `storage/logs/laravel.log`. Per vedere le email in un'interfaccia web si può aggiungere Mailpit con `vendor/bin/sail artisan sail:add mailpit`.
 
 Se le porte 80, 5173 o 5432 sono già occupate da un altro progetto, cambia `APP_PORT`, `VITE_PORT` o `FORWARD_DB_PORT` in `.env` e rilancia `./install.sh`. Cambiando `APP_PORT` aggiorna anche `APP_URL` (es. `http://localhost:8080`): le passkey funzionano solo sull'indirizzo di `APP_URL`.
 
@@ -51,15 +59,30 @@ Se le porte 80, 5173 o 5432 sono già occupate da un altro progetto, cambia `APP
 - Il logo (`resources/js/components/app-logo-icon.tsx`) e le favicon in `public/`, che sono ancora quelli di Laravel.
 - I colori del brand in `resources/css/app.css`, se il progetto non usa quelli Mirai; il testo del pannello di accesso in `resources/js/layouts/auth/auth-split-layout.tsx`.
 
-### Utente di prova e admin
+### Amministratori, ruoli e utente di prova
 
+- **Gli admin si creano solo da terminale**, in locale come in produzione (dopo il deploy, `php artisan app:create-admin` sul server). Con l'email di un utente che esiste già, il comando lo rende admin (e lo riattiva se era disattivato), dopo una conferma: serve anche a recuperare l'accesso se l'ultimo admin è stato disattivato.
 - Ruoli e permessi li crea una migrazione, quindi esistono in ogni ambiente dopo `migrate`. I permessi nuovi di un progetto si aggiungono con altre migrazioni.
+- Solo un admin assegna i ruoli; un admin non può togliersi il ruolo admin, e l'ultimo admin non può eliminare il proprio account.
 - `vendor/bin/sail artisan db:seed` aggiunge un utente di prova admin (`test@example.com`, password `password`). **Solo per lo sviluppo in locale, mai in produzione.**
-- Solo un admin può assegnare il ruolo admin, e l'ultimo admin non può eliminare il proprio account. Per rendere admin un utente da terminale (anche se è disattivato, lo riattiva):
 
-    ```bash
-    vendor/bin/sail artisan tinker --execute '$user = App\Models\User::withTrashed()->where("email", "nome@esempio.it")->firstOrFail(); $user->restore(); $user->assignRole("admin");'
-    ```
+### Disattivare una funzione di accesso
+
+Login, registrazione, verifica email, 2FA, passkey e conferma password sono tutte attive. Lo starter kit ufficiale le sceglie all'installazione, cancellando il codice di quelle non volute; qui sono già installate tutte, quindi per toglierne una **non basta toglierla da `config/fortify.php`**: le pagine importano le sue rotte, e senza le rotte il frontend non compila più. Per ogni funzione:
+
+1. Nei file PHP, togli i blocchi tra i commenti `/* @chisel-<funzione> */` e `/* @end-chisel-<funzione> */` (`grep -rn "chisel-registration" app config routes database tests`); le funzioni si chiamano `registration`, `email-verification`, `2fa`, `passkeys`, `password-confirmation`.
+2. Cancella o modifica i file elencati qui sotto (le pagine riscritte in Untitled UI non hanno i commenti).
+3. `vendor/bin/sail artisan wayfinder:generate --with-form`, poi le verifiche di "Sviluppo quotidiano".
+
+| Funzione          | Da cancellare                                                                                                                                                                                                                                                                                                                                         | Da modificare                                                                                                                                                                                                                                                                                                |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Registrazione     | `app/Actions/Fortify/CreateNewUser.php`, `pages/auth/register.tsx`, `tests/Feature/Auth/RegistrationTest.php` e `RegistrationRoleTest.php`                                                                                                                                                                                                            | `pages/auth/login.tsx` (link "Registrati"), `pages/welcome.tsx` (pulsante "Registrati")                                                                                                                                                                                                                      |
+| Verifica email    | `pages/auth/verify-email.tsx`, `tests/Feature/Auth/EmailVerificationTest.php` e `VerificationNotificationTest.php`                                                                                                                                                                                                                                    | `app/Models/User.php` (togli `MustVerifyEmail`), `pages/settings/profile.tsx` (avviso "email non verificata")                                                                                                                                                                                                |
+| 2FA               | `pages/auth/two-factor-challenge.tsx`, `components/manage-two-factor.tsx`, `two-factor-setup-modal.tsx`, `two-factor-recovery-codes.tsx`, `hooks/use-two-factor-auth.ts`, `components/base/input/pin-input.tsx`, la migrazione `add_two_factor_columns_to_users_table`, `tests/Feature/Auth/TwoFactorChallengeTest.php`; il pacchetto npm `input-otp` | `app/Models/User.php` (togli `TwoFactorAuthenticatable`), `pages/settings/security.tsx` (sezione 2FA)                                                                                                                                                                                                        |
+| Passkey           | `components/manage-passkeys.tsx`, `passkey-item.tsx`, `passkey-register.tsx`, `passkey-verify.tsx`, `lib/passkey-errors.ts`, `app/Models/Passkey.php`, la migrazione `create_passkeys_table`; il pacchetto npm `@laravel/passkeys`                                                                                                                    | `app/Models/User.php` (togli `PasskeyAuthenticatable` e `PasskeyUser`), `app/Providers/AppServiceProvider.php` (`configurePasskeys()`), `pages/settings/security.tsx`, `pages/auth/login.tsx` e `confirm-password.tsx` (pulsante passkey), `tests/Feature/Users/UserManagementTest.php` (test sulle passkey) |
+| Conferma password | `pages/auth/confirm-password.tsx`, `tests/Feature/Auth/PasswordConfirmationTest.php`                                                                                                                                                                                                                                                                  | `config/fortify.php` (`'confirmPassword' => false` per 2FA e passkey)                                                                                                                                                                                                                                        |
+
+I percorsi senza cartella sono in `resources/js/`. Se togli sia la 2FA sia le passkey, in `pages/settings/security.tsx` resta solo il cambio password.
 
 ## Sviluppo quotidiano
 
