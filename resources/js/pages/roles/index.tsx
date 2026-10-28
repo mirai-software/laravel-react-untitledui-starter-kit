@@ -28,6 +28,16 @@ type RolesIndexProps = {
     roles: RoleRow[];
 };
 
+const permissionsSummary = (role: RoleRow): string => {
+    if (role.has_all_permissions) {
+        return 'Tutti i permessi';
+    }
+
+    return role.permissions_count === 1
+        ? '1 permesso'
+        : `${role.permissions_count} permessi`;
+};
+
 const RolesIndex = ({ roles }: RolesIndexProps) => {
     const { can } = usePermissions();
     // The selected role stays set while the dialog closes, so its title doesn't go blank.
@@ -76,9 +86,11 @@ const RolesIndex = ({ roles }: RolesIndexProps) => {
                     <table className="w-full text-left text-sm">
                         <thead>
                             <tr className="border-b border-secondary bg-secondary text-xs text-quaternary *:font-semibold">
-                                <th className="px-6 py-3">Nome</th>
-                                <th className="px-6 py-3">Permessi</th>
-                                <th className="px-6 py-3">
+                                <th className="px-4 py-3 md:px-6">Nome</th>
+                                <th className="hidden px-4 py-3 md:table-cell md:px-6">
+                                    Permessi
+                                </th>
+                                <th className="px-4 py-3 md:px-6">
                                     <span className="sr-only">Azioni</span>
                                 </th>
                             </tr>
@@ -86,7 +98,7 @@ const RolesIndex = ({ roles }: RolesIndexProps) => {
                         <tbody className="divide-y divide-secondary">
                             {roles.map((role) => (
                                 <tr key={role.id}>
-                                    <td className="px-6 py-4">
+                                    <td className="px-4 py-4 md:px-6">
                                         <div className="flex items-center gap-2">
                                             <span className="font-medium text-primary">
                                                 {roleLabel(role.name)}
@@ -97,13 +109,17 @@ const RolesIndex = ({ roles }: RolesIndexProps) => {
                                                 </Badge>
                                             )}
                                         </div>
+                                        {/* On phones, the permissions count sits under the name instead of in its column. */}
+                                        <p className="mt-1 text-tertiary md:hidden">
+                                            {permissionsSummary(role)}
+                                        </p>
                                     </td>
-                                    <td className="px-6 py-4 text-tertiary">
+                                    <td className="hidden px-4 py-4 text-tertiary md:table-cell md:px-6">
                                         {role.has_all_permissions
                                             ? 'Tutti'
                                             : role.permissions_count}
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-4 py-4 md:px-6">
                                         <div className="flex items-center justify-end gap-1">
                                             {role.can.update && (
                                                 <Button
@@ -113,7 +129,9 @@ const RolesIndex = ({ roles }: RolesIndexProps) => {
                                                     iconLeading={Edit01}
                                                     aria-label={`Modifica ${roleLabel(role.name)}`}
                                                 >
-                                                    Modifica
+                                                    <span className="max-md:sr-only">
+                                                        Modifica
+                                                    </span>
                                                 </Button>
                                             )}
                                             {role.can.delete && (
@@ -126,7 +144,9 @@ const RolesIndex = ({ roles }: RolesIndexProps) => {
                                                         askToDelete(role)
                                                     }
                                                 >
-                                                    Elimina
+                                                    <span className="max-md:sr-only">
+                                                        Elimina
+                                                    </span>
                                                 </Button>
                                             )}
                                         </div>

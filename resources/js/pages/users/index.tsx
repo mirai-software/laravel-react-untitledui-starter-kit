@@ -95,10 +95,14 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
                     <table className="w-full text-left text-sm">
                         <thead>
                             <tr className="border-b border-secondary bg-secondary text-xs text-quaternary *:font-semibold">
-                                <th className="px-6 py-3">Utente</th>
-                                <th className="px-6 py-3">Ruoli</th>
-                                <th className="px-6 py-3">Stato</th>
-                                <th className="px-6 py-3">
+                                <th className="px-4 py-3 md:px-6">Utente</th>
+                                <th className="hidden px-4 py-3 md:table-cell md:px-6">
+                                    Ruoli
+                                </th>
+                                <th className="hidden px-4 py-3 md:table-cell md:px-6">
+                                    Stato
+                                </th>
+                                <th className="px-4 py-3 md:px-6">
                                     <span className="sr-only">Azioni</span>
                                 </th>
                             </tr>
@@ -106,7 +110,8 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
                         <tbody className="divide-y divide-secondary">
                             {users.map((user) => (
                                 <tr key={user.id}>
-                                    <td className="px-6 py-4">
+                                    {/* On phones this column takes the free width and truncates, so the actions stay visible. */}
+                                    <td className="px-4 py-4 max-md:w-full max-md:max-w-0 md:px-6">
                                         <div className="flex items-center gap-3">
                                             <Avatar
                                                 size="md"
@@ -124,10 +129,30 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
                                                 <span className="truncate text-tertiary">
                                                     {user.email}
                                                 </span>
+                                                {/* On phones, roles and status sit under the name instead of in their columns. */}
+                                                <div className="mt-1.5 flex flex-wrap gap-1 md:hidden">
+                                                    {user.roles.map((role) => (
+                                                        <Badge
+                                                            key={role}
+                                                            color="brand"
+                                                            size="sm"
+                                                        >
+                                                            {roleLabel(role)}
+                                                        </Badge>
+                                                    ))}
+                                                    {!user.is_active && (
+                                                        <BadgeWithDot
+                                                            color="gray"
+                                                            size="sm"
+                                                        >
+                                                            Disattivato
+                                                        </BadgeWithDot>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="hidden px-4 py-4 md:table-cell md:px-6">
                                         <div className="flex flex-wrap gap-1">
                                             {user.roles.length > 0 ? (
                                                 user.roles.map((role) => (
@@ -146,7 +171,7 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
                                             )}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="hidden px-4 py-4 md:table-cell md:px-6">
                                         <BadgeWithDot
                                             color={
                                                 user.is_active
@@ -160,7 +185,7 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
                                                 : 'Disattivato'}
                                         </BadgeWithDot>
                                     </td>
-                                    <td className="px-6 py-4">
+                                    <td className="px-4 py-4 md:px-6">
                                         <div className="flex items-center justify-end gap-1">
                                             {user.can.update && (
                                                 <Button
@@ -170,7 +195,9 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
                                                     iconLeading={Edit01}
                                                     aria-label={`Modifica ${user.name}`}
                                                 >
-                                                    Modifica
+                                                    <span className="max-md:sr-only">
+                                                        Modifica
+                                                    </span>
                                                 </Button>
                                             )}
                                             {user.can.delete && (
@@ -183,7 +210,9 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
                                                         askToDeactivate(user)
                                                     }
                                                 >
-                                                    Disattiva
+                                                    <span className="max-md:sr-only">
+                                                        Disattiva
+                                                    </span>
                                                 </Button>
                                             )}
                                             {user.can.restore && (
@@ -203,7 +232,9 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
                                                         restoreUser(user)
                                                     }
                                                 >
-                                                    Riattiva
+                                                    <span className="max-md:sr-only">
+                                                        Riattiva
+                                                    </span>
                                                 </Button>
                                             )}
                                         </div>
