@@ -1,5 +1,5 @@
 import type { InertiaLinkProps } from '@inertiajs/react';
-import type { ComponentType, SVGAttributes } from 'react';
+import type { FC } from 'react';
 
 export type BreadcrumbItem = {
     title: string;
@@ -9,6 +9,6 @@ export type BreadcrumbItem = {
 export type NavItem = {
     title: string;
     href: NonNullable<InertiaLinkProps['href']>;
-    icon?: ComponentType<SVGAttributes<SVGElement>> | null;
+    icon?: FC<{ className?: string }> | null;
     isActive?: boolean;
 };

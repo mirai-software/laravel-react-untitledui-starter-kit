@@ -1,18 +1,14 @@
 import AuthLayoutTemplate from '@/layouts/auth/auth-split-layout';
+import type { AuthLayoutProps } from '@/types';
 
-export default function AuthLayout({
+const AuthLayout = ({
+    title = '',
+    description = '',
     children,
-    title,
-    description,
-    ...props
-}: {
-    children: React.ReactNode;
-    title: string;
-    description: string;
-}) {
-    return (
-        <AuthLayoutTemplate title={title} description={description} {...props}>
-            {children}
-        </AuthLayoutTemplate>
-    );
-}
+}: AuthLayoutProps) => (
+    <AuthLayoutTemplate title={title} description={description}>
+        {children}
+    </AuthLayoutTemplate>
+);
+
+export default AuthLayout;

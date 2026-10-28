@@ -1,27 +1,25 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
+    use WithoutModelEvents;
+
     /**
      * Seed the application's database.
+     *
+     * Safe in production: it only adds the roles and permissions the app needs, so deploys run
+     * `php artisan migrate --seed --force`. No users here: admins are created with
+     * `php artisan app:create-admin`, test data with factories.
      */
     public function run(): void
     {
         $this->call(RolePermissionSeeder::class);
 
-        // $user = User::factory()->create([
-        //     'name'  => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-
-        // $user->assignRole('admin');
+        // User::factory(10)->create();
     }
 }

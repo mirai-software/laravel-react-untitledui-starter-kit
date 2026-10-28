@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+use Illuminate\Routing\Middleware\SubstituteBindings;
 
 return [
     /*
@@ -16,9 +16,10 @@ return [
      */
     'directories' => [
         app_path('Http/Controllers') => [
-            // Le rotte web hanno bisogno del gruppo middleware `web` (sessione,
-            // CSRF, cookie, dati condivisi Inertia): è il gruppo in cui erano
-            // dichiarate prima in routes/web.php e routes/settings.php.
+            // Web routes need the `web` group (session, CSRF, Inertia shared data).
+            // Only our own controllers (RoleController, UserController) declare
+            // routes as attributes; upstream's controllers keep theirs in routes/*.php
+            // and, having no attributes, register nothing here.
             'middleware' => 'web',
         ],
         /*
@@ -37,7 +38,7 @@ return [
      * This middleware will be applied to all routes.
      */
     'middleware' => [
-        Illuminate\Routing\Middleware\SubstituteBindings::class,
+        SubstituteBindings::class,
     ],
 
     /*

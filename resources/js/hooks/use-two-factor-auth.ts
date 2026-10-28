@@ -1,6 +1,5 @@
 import { useHttp } from '@inertiajs/react';
 import { useCallback, useState } from 'react';
-
 import { qrCode, recoveryCodes, secretKey } from '@/routes/two-factor';
 
 export type UseTwoFactorAuthReturn = {
@@ -56,7 +55,7 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
 
             setQrCodeSvg(svg);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch QR code']);
+            setErrors((prev) => [...prev, 'Impossibile caricare il codice QR']);
             setQrCodeSvg(null);
         }
     }, [submit]);
@@ -69,7 +68,10 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
 
             setManualSetupKey(key);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch a setup key']);
+            setErrors((prev) => [
+                ...prev,
+                'Impossibile caricare la chiave di configurazione',
+            ]);
             setManualSetupKey(null);
         }
     }, [submit]);
@@ -80,7 +82,10 @@ export const useTwoFactorAuth = (): UseTwoFactorAuthReturn => {
             const codes = (await submit(recoveryCodes())) as string[];
             setRecoveryCodesList(codes);
         } catch {
-            setErrors((prev) => [...prev, 'Failed to fetch recovery codes']);
+            setErrors((prev) => [
+                ...prev,
+                'Impossibile caricare i codici di recupero',
+            ]);
             setRecoveryCodesList([]);
         }
     }, [submit]);

@@ -1,134 +1,173 @@
 import { Head, router } from '@inertiajs/react';
 import { Edit01, Plus, Trash01 } from '@untitledui/icons';
-
+import { useState } from 'react';
 import { Badge } from '@/components/base/badges/badges';
 import { Button } from '@/components/base/buttons/button';
-import Heading from '@/components/heading';
+import { ConfirmModal } from '@/components/confirm-modal';
+import { PageHeader } from '@/components/page-header';
 import { usePermissions } from '@/hooks/use-permissions';
+import { roleLabel } from '@/lib/roles';
 import { dashboard } from '@/routes';
 import { create, destroy, edit, index } from '@/routes/roles';
-import type { PageWithBreadcrumbs } from '@/types';
 
 type RoleRow = {
     id: number;
     name: string;
     permissions_count: number;
+    /** The admin role passes every check, whatever permissions it has. */
+    has_all_permissions: boolean;
     is_protected: boolean;
+    /** What the current user can do on this row (computed by the server). */
+    can: {
+        update: boolean;
+        delete: boolean;
+    };
 };
 
-type Props = {
+type RolesIndexProps = {
     roles: RoleRow[];
 };
 
-const RolesIndex: PageWithBreadcrumbs<Props> = ({ roles }) => {
-    const { can } = usePermissions();
-    const canCreate = can('roles.create');
-    const canUpdate = can('roles.update');
-    const canDelete = can('roles.delete');
-    const showActions = canUpdate || canDelete;
+const permissionsSummary = (role: RoleRow): string => {
+    if (role.has_all_permissions) {
+        return 'Tutti i permessi';
+    }
 
-    const handleDelete = (role: RoleRow): void => {
-        if (
-            window.confirm(
-                `Eliminare il ruolo "${role.name}"? L'operazione non è reversibile.`,
-            )
-        ) {
-            router.delete(destroy(role.id).url, { preserveScroll: true });
+    return role.permissions_count === 1
+        ? '1 permesso'
+        : `${role.permissions_count} permessi`;
+};
+
+const RolesIndex = ({ roles }: RolesIndexProps) => {
+    const { can } = usePermissions();
+    // The selected role stays set while the dialog closes, so its title doesn't go blank.
+    const [roleToDelete, setRoleToDelete] = useState<RoleRow | null>(null);
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const askToDelete = (role: RoleRow): void => {
+        setRoleToDelete(role);
+        setIsConfirmOpen(true);
+    };
+
+    const deleteRole = (): void => {
+        if (roleToDelete === null) {
+            return;
         }
+
+        router.delete(destroy(roleToDelete.id).url, {
+            preserveScroll: true,
+            onStart: () => setIsDeleting(true),
+            onFinish: () => {
+                setIsDeleting(false);
+                setIsConfirmOpen(false);
+            },
+        });
     };
 
     return (
         <>
             <Head title="Ruoli" />
-            <div className="flex h-full flex-1 flex-col gap-6 p-4">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                    <Heading
-                        title="Ruoli"
-                        description="Gestisci i ruoli e i permessi assegnati."
-                    />
-                    {canCreate && (
-                        <Button href={create().url} iconLeading={Plus}>
-                            Nuovo ruolo
-                        </Button>
-                    )}
-                </div>
 
-                <div className="overflow-hidden rounded-xl border border-border-secondary">
+            <div className="flex flex-col gap-6 p-4 md:p-6">
+                <PageHeader
+                    title="Ruoli"
+                    description="Gestisci i ruoli e i permessi che assegnano."
+                    actions={
+                        can('roles.create') && (
+                            <Button href={create().url} iconLeading={Plus}>
+                                Nuovo ruolo
+                            </Button>
+                        )
+                    }
+                />
+
+                <div className="relative overflow-x-auto rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
                     <table className="w-full text-left text-sm">
-                        <thead className="border-b border-border-secondary bg-bg-secondary">
-                            <tr className="text-text-tertiary">
-                                <th className="px-4 py-3 font-medium">Nome</th>
-                                <th className="px-4 py-3 font-medium">
+                        <thead>
+                            <tr className="border-b border-secondary bg-secondary text-xs text-quaternary *:font-semibold">
+                                <th className="px-4 py-3 md:px-6">Nome</th>
+                                <th className="hidden px-4 py-3 md:table-cell md:px-6">
                                     Permessi
                                 </th>
-                                {showActions && (
-                                    <th className="px-4 py-3 text-right font-medium">
-                                        Azioni
-                                    </th>
-                                )}
+                                <th className="px-4 py-3 md:px-6">
+                                    <span className="sr-only">Azioni</span>
+                                </th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-border-secondary">
+                        <tbody className="divide-y divide-secondary">
                             {roles.map((role) => (
                                 <tr key={role.id}>
-                                    <td className="px-4 py-3">
+                                    <td className="px-4 py-4 md:px-6">
                                         <div className="flex items-center gap-2">
-                                            <span className="font-medium text-text-primary">
-                                                {role.name}
+                                            <span className="font-medium text-primary">
+                                                {roleLabel(role.name)}
                                             </span>
                                             {role.is_protected && (
-                                                <Badge
-                                                    color="gray"
-                                                    size="sm"
-                                                    type="pill-color"
-                                                >
-                                                    protetto
+                                                <Badge color="gray" size="sm">
+                                                    Protetto
                                                 </Badge>
                                             )}
                                         </div>
+                                        {/* On phones, the permissions count sits under the name instead of in its column. */}
+                                        <p className="mt-1 text-tertiary md:hidden">
+                                            {permissionsSummary(role)}
+                                        </p>
                                     </td>
-                                    <td className="px-4 py-3 text-text-tertiary">
-                                        {role.permissions_count}
+                                    <td className="hidden px-4 py-4 text-tertiary md:table-cell md:px-6">
+                                        {role.has_all_permissions
+                                            ? 'Tutti'
+                                            : role.permissions_count}
                                     </td>
-                                    {showActions && (
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center justify-end gap-1">
-                                                {canUpdate && (
-                                                    <Button
-                                                        color="tertiary"
-                                                        size="sm"
-                                                        href={edit(role.id).url}
-                                                        iconLeading={Edit01}
-                                                    >
+                                    <td className="px-4 py-4 md:px-6">
+                                        <div className="flex items-center justify-end gap-1">
+                                            {role.can.update && (
+                                                <Button
+                                                    color="tertiary"
+                                                    size="sm"
+                                                    href={edit(role.id).url}
+                                                    iconLeading={Edit01}
+                                                    aria-label={`Modifica ${roleLabel(role.name)}`}
+                                                >
+                                                    <span className="max-md:sr-only">
                                                         Modifica
-                                                    </Button>
-                                                )}
-                                                {canDelete &&
-                                                    !role.is_protected && (
-                                                        <Button
-                                                            color="tertiary-destructive"
-                                                            size="sm"
-                                                            iconLeading={
-                                                                Trash01
-                                                            }
-                                                            onClick={() =>
-                                                                handleDelete(
-                                                                    role,
-                                                                )
-                                                            }
-                                                        >
-                                                            Elimina
-                                                        </Button>
-                                                    )}
-                                            </div>
-                                        </td>
-                                    )}
+                                                    </span>
+                                                </Button>
+                                            )}
+                                            {role.can.delete && (
+                                                <Button
+                                                    color="tertiary-destructive"
+                                                    size="sm"
+                                                    iconLeading={Trash01}
+                                                    aria-label={`Elimina ${roleLabel(role.name)}`}
+                                                    onPress={() =>
+                                                        askToDelete(role)
+                                                    }
+                                                >
+                                                    <span className="max-md:sr-only">
+                                                        Elimina
+                                                    </span>
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            <ConfirmModal
+                isOpen={isConfirmOpen}
+                onOpenChange={setIsConfirmOpen}
+                title={`Eliminare il ruolo "${roleToDelete === null ? '' : roleLabel(roleToDelete.name)}"?`}
+                description="Gli utenti con questo ruolo perderanno i suoi permessi. L'operazione non si può annullare."
+                confirmLabel="Elimina ruolo"
+                isDestructive
+                isProcessing={isDeleting}
+                onConfirm={deleteRole}
+            />
         </>
     );
 };

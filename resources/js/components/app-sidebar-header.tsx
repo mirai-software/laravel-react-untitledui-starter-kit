@@ -1,28 +1,39 @@
-import { Menu01 } from '@untitledui/icons';
-
+import { LayoutLeft, Menu02 } from '@untitledui/icons';
 import { useSidebar } from '@/components/app-shell';
+import { Button } from '@/components/base/buttons/button';
 import { Breadcrumbs } from '@/components/breadcrumbs';
-import type { BreadcrumbItem as BreadcrumbItemType } from '@/types';
+import type { BreadcrumbItem } from '@/types';
 
-export function AppSidebarHeader({
-    breadcrumbs = [],
-}: {
-    breadcrumbs?: BreadcrumbItemType[];
-}) {
-    const { toggle } = useSidebar();
+type AppSidebarHeaderProps = {
+    breadcrumbs?: BreadcrumbItem[];
+};
+
+const AppSidebarHeader = ({ breadcrumbs = [] }: AppSidebarHeaderProps) => {
+    const { isOpen, toggle, isMobileOpen, setMobileOpen } = useSidebar();
 
     return (
-        <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border-secondary px-4">
-            <div className="flex items-center gap-2">
-                <button
-                    onClick={toggle}
-                    className="-ml-1 inline-flex size-8 items-center justify-center rounded-md text-text-tertiary transition-colors hover:bg-bg-primary_hover hover:text-text-primary"
-                    aria-label="Toggle sidebar"
-                >
-                    <Menu01 className="size-5" />
-                </button>
-                <Breadcrumbs breadcrumbs={breadcrumbs} />
-            </div>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b border-secondary px-4 md:px-6">
+            <Button
+                color="tertiary"
+                size="sm"
+                iconLeading={Menu02}
+                aria-label="Apri il menu"
+                aria-expanded={isMobileOpen}
+                className="lg:hidden"
+                onPress={() => setMobileOpen(true)}
+            />
+            <Button
+                color="tertiary"
+                size="sm"
+                iconLeading={LayoutLeft}
+                aria-label="Barra laterale"
+                aria-expanded={isOpen}
+                className="hidden lg:inline-flex"
+                onPress={toggle}
+            />
+            <Breadcrumbs breadcrumbs={breadcrumbs} />
         </header>
     );
-}
+};
+
+export { AppSidebarHeader };

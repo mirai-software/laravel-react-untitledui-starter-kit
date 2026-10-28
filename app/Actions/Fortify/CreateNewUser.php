@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Actions\Fortify;
 
 use App\Concerns\PasswordValidationRules;
@@ -27,19 +25,14 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $this->passwordRules(),
         ])->validate();
 
-        // Il primo utente registrato diventa admin (bootstrap dell'istanza);
-        // i successivi sono utenti normali. `withTrashed()` evita che, dopo
-        // aver disattivato tutti gli account, una nuova registrazione torni
-        // ad ottenere privilegi di admin.
-        $isFirstUser = User::withTrashed()->doesntExist();
-
-        $user = User::query()->create([
-            'name'     => $input['name'],
-            'email'    => $input['email'],
+        $user = User::create([
+            'name' => $input['name'],
+            'email' => $input['email'],
             'password' => $input['password'],
         ]);
 
-        $user->assignRole(Role::findOrCreate($isFirstUser ? 'admin' : 'user', 'web'));
+        // Everyone who registers is a plain user; admins are created with `php artisan app:create-admin`.
+        $user->assignRole(Role::findOrCreate(Role::USER, 'web'));
 
         return $user;
     }

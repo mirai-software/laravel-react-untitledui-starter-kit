@@ -1,25 +1,25 @@
 import { usePage } from '@inertiajs/react';
-
-import type { AppPermission } from '@/types/auth';
+import type { AppPermission } from '@/types/permissions';
 
 export type UsePermissionsReturn = {
     permissions: AppPermission[];
     can: (permission: AppPermission) => boolean;
-    canAny: (permissions: AppPermission[]) => boolean;
+};
+
+/** The shared `auth.permissions` prop, kept out of upstream's `Auth` type. */
+type PermissionsPageProps = {
+    auth: { permissions: AppPermission[] };
 };
 
 /**
- * Permessi effettivi dell'utente corrente, condivisi da `HandleInertiaRequests`.
- * L'admin (bypass via Gate::before) riceve l'elenco completo.
+ * The current user's effective permissions, shared by `HandleInertiaRequests`.
+ * The admin (who passes every check through Gate::before) gets all of them.
  */
 export function usePermissions(): UsePermissionsReturn {
-    const permissions = usePage().props.auth.permissions;
+    const { permissions } = usePage<PermissionsPageProps>().props.auth;
 
     const can = (permission: AppPermission): boolean =>
         permissions.includes(permission);
 
-    const canAny = (required: AppPermission[]): boolean =>
-        required.some((permission) => permissions.includes(permission));
-
-    return { permissions, can, canAny };
+    return { permissions, can };
 }

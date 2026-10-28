@@ -1,12 +1,21 @@
 @import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+/* After tw-animate-css, so the theme's animations (e.g. the PIN input's caret-blink) win. */
 @import './theme.css';
 @import './typography.css';
 
 @source '../views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 
+/* The committed AI guidelines contain example classes that the app doesn't use. */
+@source not '../../.claude';
+@source not '../../AGENTS.md';
+@source not '../../CLAUDE.md';
+
+@plugin '@tailwindcss/typography';
 @plugin 'tailwindcss-react-aria-components';
-@plugin 'tailwindcss-animate';
 
 @custom-variant dark (&:where(.dark-mode, .dark-mode *));
 @custom-variant label (& [data-label]);
@@ -30,16 +39,49 @@
     transition-timing-function: inherit;
 }
 
+/*
+ * Mirai brand colors, replacing Untitled UI's purple (theme.css stays exactly as Untitled UI ships it).
+ * The brand coral #D97757 is the 500 step; 600 (buttons) and 700 (links) are darker so white text
+ * and links on white meet WCAG AA contrast (4.7:1 and 6.1:1). A project rebrands by changing these.
+ */
 @theme {
-    --font-sans:
-        'Instrument Sans', var(--font-inter, 'Inter'), -apple-system,
-        'Segoe UI', Roboto, Arial, sans-serif, 'Apple Color Emoji',
-        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-brand-50: rgb(255 245 241);
+    --color-brand-100: rgb(255 232 224);
+    --color-brand-200: rgb(255 206 190);
+    --color-brand-300: rgb(250 173 147);
+    --color-brand-400: rgb(236 143 113);
+    --color-brand-500: rgb(217 119 87);
+    --color-brand-600: rgb(181 89 59);
+    --color-brand-700: rgb(157 74 46);
+    --color-brand-800: rgb(131 61 38);
+    --color-brand-900: rgb(107 54 36);
+    --color-brand-950: rgb(71 35 23);
 }
 
+/* `font-sans` follows the Untitled UI theme's body font (Inter, loaded in vite.config.ts). */
+@theme {
+    --font-sans: var(--font-body);
+
+    /* tw-animate-css only reads whole steps; Untitled UI's dropdowns and tooltips slide by 0.5. */
+    --translate-0\.5: calc(var(--spacing) * 0.5);
+}
+
+@layer base {
+    body {
+        @apply bg-primary text-primary;
+    }
+
+    /* In dark mode Untitled UI lightens solid brand buttons on hover (to the 500 step, 3.1:1 with
+       white text); the darker 700 keeps the label readable. */
+    .dark-mode {
+        --color-bg-brand-solid_hover: var(--color-brand-700);
+    }
+}
+
+/* Untitled UI base styles. */
 html,
 body {
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-font-variant-ligatures: contextual;

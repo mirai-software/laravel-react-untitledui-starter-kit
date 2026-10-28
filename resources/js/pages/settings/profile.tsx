@@ -1,38 +1,43 @@
-import { Transition } from '@headlessui/react';
-import { Form, Head, Link, usePage } from '@inertiajs/react';
-
+import { Form, Head, usePage } from '@inertiajs/react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
+import TextLink from '@/components/text-link';
 import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 
-export default function Profile({
-    mustVerifyEmail,
-    status,
-}: {
+type ProfileProps = {
     mustVerifyEmail: boolean;
     status?: string;
-}) {
+};
+
+const Profile = ({ mustVerifyEmail, status }: ProfileProps) => {
     const { auth } = usePage().props;
+
     return (
         <>
             <Head title="Impostazioni profilo" />
+
             <h1 className="sr-only">Impostazioni profilo</h1>
-            <div className="space-y-6">
+
+            <div className="flex flex-col gap-6">
                 <Heading
                     variant="small"
-                    title="Informazioni profilo"
+                    title="Profilo"
                     description="Aggiorna nome e indirizzo email"
                 />
+
                 <Form
+                    noValidate
                     {...ProfileController.update.form()}
-                    options={{ preserveScroll: true }}
-                    className="space-y-6"
+                    options={{
+                        preserveScroll: true,
+                    }}
+                    className="flex flex-col gap-6"
                 >
-                    {({ processing, recentlySuccessful, errors }) => (
+                    {({ processing, errors }) => (
                         <>
                             <Input
                                 name="name"
@@ -40,75 +45,73 @@ export default function Profile({
                                 defaultValue={auth.user.name}
                                 isRequired
                                 autoComplete="name"
-                                placeholder="Nome completo"
-                                isInvalid={!!errors.name}
+                                placeholder="Nome e cognome"
+                                isInvalid={Boolean(errors.name)}
                                 hint={errors.name}
                             />
+
                             <Input
                                 name="email"
                                 type="email"
-                                label="Indirizzo email"
+                                label="Email"
                                 defaultValue={auth.user.email}
                                 isRequired
                                 autoComplete="username"
-                                placeholder="Indirizzo email"
-                                isInvalid={!!errors.email}
+                                placeholder="email@example.com"
+                                isInvalid={Boolean(errors.email)}
                                 hint={errors.email}
                             />
+
                             {mustVerifyEmail &&
                                 auth.user.email_verified_at === null && (
-                                    <div>
-                                        <p className="-mt-4 text-sm text-text-tertiary">
+                                    <div className="flex flex-col gap-2">
+                                        <p className="text-sm text-tertiary">
                                             Il tuo indirizzo email non è
                                             verificato.{' '}
-                                            <Link
-                                                href={send()}
-                                                as="button"
-                                                className="text-text-primary underline decoration-gray-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-gray-600"
-                                            >
-                                                Clicca qui per inviare di nuovo
-                                                l'email di verifica.
-                                            </Link>
+                                            <TextLink href={send()} as="button">
+                                                Invia di nuovo l'email di
+                                                verifica.
+                                            </TextLink>
                                         </p>
+
                                         {status ===
                                             'verification-link-sent' && (
-                                            <div className="text-success-600 mt-2 text-sm font-medium">
+                                            <p className="text-sm font-medium text-success-primary">
                                                 Un nuovo link di verifica è
                                                 stato inviato al tuo indirizzo
                                                 email.
-                                            </div>
+                                            </p>
                                         )}
                                     </div>
                                 )}
-                            <div className="flex items-center gap-4">
+
+                            <div>
                                 <Button
                                     type="submit"
                                     isDisabled={processing}
+                                    isLoading={processing}
                                     data-test="update-profile-button"
                                 >
                                     Salva
                                 </Button>
-                                <Transition
-                                    show={recentlySuccessful}
-                                    enter="transition ease-in-out"
-                                    enterFrom="opacity-0"
-                                    leave="transition ease-in-out"
-                                    leaveTo="opacity-0"
-                                >
-                                    <p className="text-sm text-text-tertiary">
-                                        Salvato
-                                    </p>
-                                </Transition>
                             </div>
                         </>
                     )}
                 </Form>
             </div>
+
             <DeleteUser />
         </>
     );
-}
+};
 
 Profile.layout = {
-    breadcrumbs: [{ title: 'Impostazioni profilo', href: edit() }],
+    breadcrumbs: [
+        {
+            title: 'Impostazioni profilo',
+            href: edit(),
+        },
+    ],
 };
+
+export default Profile;

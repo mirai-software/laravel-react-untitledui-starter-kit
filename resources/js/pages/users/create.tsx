@@ -1,26 +1,33 @@
 import { Head } from '@inertiajs/react';
-
-import Heading from '@/components/heading';
-import UserForm from '@/components/users/user-form';
+import { PageHeader } from '@/components/page-header';
+import { UserForm } from '@/components/users/user-form';
 import { dashboard } from '@/routes';
 import { create, index } from '@/routes/users';
-import type { PageWithBreadcrumbs } from '@/types';
 
-type Props = {
+type CreateUserProps = {
+    canAssignRoles: boolean;
     roles: string[];
+    passwordRules: string;
 };
 
-const CreateUser: PageWithBreadcrumbs<Props> = ({ roles }) => (
+const CreateUser = ({
+    canAssignRoles,
+    roles,
+    passwordRules,
+}: CreateUserProps) => (
     <>
         <Head title="Nuovo utente" />
-        <div className="flex h-full flex-1 flex-col gap-6 p-4">
-            <Heading
+
+        <div className="flex max-w-4xl flex-col gap-8 p-4 md:p-6">
+            <PageHeader
                 title="Nuovo utente"
-                description="Crea un utente e assegna i ruoli."
+                description="Crea un utente e assegna i suoi ruoli."
             />
-            <div className="max-w-3xl">
-                <UserForm roles={roles} />
-            </div>
+            <UserForm
+                canAssignRoles={canAssignRoles}
+                roles={roles}
+                passwordRules={passwordRules}
+            />
         </div>
     </>
 );

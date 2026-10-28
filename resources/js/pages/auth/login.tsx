@@ -1,108 +1,97 @@
 import { Form, Head } from '@inertiajs/react';
-
 import { Button } from '@/components/base/buttons/button';
 import { Checkbox } from '@/components/base/checkbox/checkbox';
 import { Input } from '@/components/base/input/input';
-import { Label } from '@/components/base/input/label';
+import PasskeyVerify from '@/components/passkey-verify';
+import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
-type Props = {
+type LoginProps = {
     status?: string;
     canResetPassword: boolean;
-    canRegister: boolean;
 };
 
-export default function Login({
-    status,
-    canResetPassword,
-    canRegister,
-}: Props) {
-    return (
-        <>
-            <Head title="Accedi" />
+const Login = ({ status, canResetPassword }: LoginProps) => (
+    <>
+        <Head title="Accedi" />
 
-            <Form
-                {...store.form()}
-                resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
-            >
-                {({ processing, errors }) => (
-                    <>
-                        <div className="grid gap-6">
-                            <Input
-                                name="email"
-                                type="email"
-                                label="Indirizzo email"
-                                isRequired
-                                autoFocus
-                                autoComplete="email"
-                                placeholder="email@example.com"
-                                isInvalid={!!errors.email}
-                                hint={errors.email}
-                            />
+        <PasskeyVerify />
 
-                            <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label>Password</Label>
-                                    {canResetPassword && (
-                                        <TextLink
-                                            href={request()}
-                                            className="ml-auto text-sm"
-                                            tabIndex={5}
-                                        >
-                                            Password dimenticata?
-                                        </TextLink>
-                                    )}
-                                </div>
-                                <Input
-                                    name="password"
-                                    type="password"
-                                    isRequired
-                                    autoComplete="current-password"
-                                    placeholder="Password"
-                                    isInvalid={!!errors.password}
-                                    hint={errors.password}
-                                />
-                            </div>
+        <Form
+            noValidate
+            {...store.form()}
+            resetOnSuccess={['password']}
+            className="flex flex-col gap-6"
+        >
+            {({ processing, errors }) => (
+                <>
+                    <div className="flex flex-col gap-5">
+                        <Input
+                            name="email"
+                            type="email"
+                            label="Email"
+                            isRequired
+                            autoFocus
+                            autoComplete="email"
+                            placeholder="email@example.com"
+                            isInvalid={Boolean(errors.email)}
+                            hint={errors.email}
+                        />
 
-                            <Checkbox name="remember" label="Ricordami" />
+                        <PasswordInput
+                            name="password"
+                            label="Password"
+                            isRequired
+                            autoComplete="current-password"
+                            placeholder="••••••••"
+                            isInvalid={Boolean(errors.password)}
+                            hint={errors.password}
+                        />
+                    </div>
 
-                            <Button
-                                type="submit"
-                                className="mt-4 w-full"
-                                isDisabled={processing}
-                                isLoading={processing}
-                                data-test="login-button"
-                            >
-                                Accedi
-                            </Button>
-                        </div>
+                    <div className="flex items-center justify-between gap-3">
+                        <Checkbox name="remember" label="Ricordami" />
 
-                        {canRegister && (
-                            <div className="text-center text-sm text-text-tertiary">
-                                Non hai un account?{' '}
-                                <TextLink href={register()} tabIndex={5}>
-                                    Registrati
-                                </TextLink>
-                            </div>
+                        {canResetPassword && (
+                            <TextLink href={request()} className="text-sm">
+                                Password dimenticata?
+                            </TextLink>
                         )}
-                    </>
-                )}
-            </Form>
+                    </div>
 
-            {status && (
-                <div className="text-success-600 mb-4 text-center text-sm font-medium">
-                    {status}
-                </div>
+                    <Button
+                        type="submit"
+                        size="lg"
+                        className="w-full"
+                        isDisabled={processing}
+                        isLoading={processing}
+                        data-test="login-button"
+                    >
+                        Accedi
+                    </Button>
+
+                    <p className="text-center text-sm text-tertiary">
+                        Non hai un account?{' '}
+                        <TextLink href={register()}>Registrati</TextLink>
+                    </p>
+                </>
             )}
-        </>
-    );
-}
+        </Form>
+
+        {status && (
+            <p className="text-center text-sm font-medium text-success-primary">
+                {status}
+            </p>
+        )}
+    </>
+);
 
 Login.layout = {
     title: 'Accedi al tuo account',
     description: 'Inserisci email e password per accedere',
 };
+
+export default Login;

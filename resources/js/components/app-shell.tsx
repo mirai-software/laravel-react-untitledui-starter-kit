@@ -1,68 +1,76 @@
-import { usePage } from '@inertiajs/react';
-import {
-    createContext,
-    useCallback,
-    useContext,
-    useState,
-    type ReactNode,
-} from 'react';
+import { router, usePage } from '@inertiajs/react';
+import type { ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { AppVariant } from '@/types';
 
-import { useIsMobile } from '@/hooks/use-mobile';
-
-type SidebarContextType = {
+type SidebarContextValue = {
+    /** Desktop sidebar visibility, remembered in the `sidebar_state` cookie. */
     isOpen: boolean;
-    isMobile: boolean;
     toggle: () => void;
-    setOpen: (open: boolean) => void;
+    /** Mobile navigation drawer. */
+    isMobileOpen: boolean;
+    setMobileOpen: (isOpen: boolean) => void;
 };
 
-const SidebarContext = createContext<SidebarContextType>({
+const SidebarContext = createContext<SidebarContextValue>({
     isOpen: true,
-    isMobile: false,
     toggle: () => {},
-    setOpen: () => {},
+    isMobileOpen: false,
+    setMobileOpen: () => {},
 });
 
-export function useSidebar() {
-    return useContext(SidebarContext);
-}
+const useSidebar = () => useContext(SidebarContext);
 
-type Props = { children: ReactNode; variant?: 'header' | 'sidebar' };
+const rememberSidebarState = (isOpen: boolean): void => {
+    document.cookie = `sidebar_state=${isOpen ? 'true' : 'false'};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
+};
 
-export function AppShell({ children, variant = 'header' }: Props) {
-    const isDefaultOpen = usePage().props.sidebarOpen;
-    const isMobile = useIsMobile();
-    const [isOpen, setIsOpen] = useState(isDefaultOpen ?? true);
+type AppShellProps = {
+    children: ReactNode;
+    /**
+     * Kept so upstream's `app-sidebar-layout.tsx` works unchanged. The kit only has the
+     * sidebar layout: upstream's alternative top-bar layout isn't part of it.
+     */
+    variant?: AppVariant;
+};
 
-    const toggle = useCallback(() => {
-        setIsOpen((prev) => {
-            const next = !prev;
-            document.cookie = `sidebar_state=${next ? 'true' : 'false'};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
-            return next;
-        });
+/** Tailwind's `lg` breakpoint, where the sidebar replaces the mobile drawer. */
+const desktopQuery = '(min-width: 1024px)';
+
+const AppShell = ({ children }: AppShellProps) => {
+    const { sidebarOpen } = usePage().props;
+    const [isOpen, setIsOpen] = useState<boolean>(sidebarOpen);
+    const [isMobileOpen, setMobileOpen] = useState(false);
+
+    // Close the mobile drawer whenever a visit completes.
+    useEffect(() => router.on('navigate', () => setMobileOpen(false)), []);
+
+    // Close it when the window grows to desktop width (e.g. a tablet rotated), where it's hidden.
+    useEffect(() => {
+        const desktop = window.matchMedia(desktopQuery);
+        const closeOnDesktop = (event: MediaQueryListEvent): void => {
+            if (event.matches) {
+                setMobileOpen(false);
+            }
+        };
+
+        desktop.addEventListener('change', closeOnDesktop);
+
+        return () => desktop.removeEventListener('change', closeOnDesktop);
     }, []);
 
-    const setOpen = useCallback((open: boolean) => {
-        setIsOpen(open);
-        document.cookie = `sidebar_state=${open ? 'true' : 'false'};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
-    }, []);
-
-    if (variant === 'header') {
-        return (
-            <div className="flex min-h-screen w-full flex-col">{children}</div>
-        );
-    }
+    const toggle = (): void => {
+        rememberSidebarState(!isOpen);
+        setIsOpen(!isOpen);
+    };
 
     return (
         <SidebarContext.Provider
-            value={{
-                isOpen: isMobile ? false : isOpen,
-                isMobile,
-                toggle,
-                setOpen,
-            }}
+            value={{ isOpen, toggle, isMobileOpen, setMobileOpen }}
         >
-            <div className="flex min-h-screen w-full">{children}</div>
+            <div className="flex min-h-dvh w-full bg-primary">{children}</div>
         </SidebarContext.Provider>
     );
-}
+};
+
+export { AppShell, useSidebar };

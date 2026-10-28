@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Database\Seeders;
 
 use App\Models\Permission;
@@ -9,14 +7,19 @@ use App\Models\Role;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\PermissionRegistrar;
 
+/**
+ * The roles and permissions the app needs. Safe to run again: it only adds what is missing,
+ * so it runs on every deploy (`php artisan migrate --seed --force`). A project adds its own
+ * permissions to PERMISSIONS.
+ */
 class RolePermissionSeeder extends Seeder
 {
     /**
-     * Permessi base del core, raggruppati per risorsa (`risorsa.azione`).
+     * The permissions, named `resource.action`.
      *
      * @var list<string>
      */
-    private const array PERMISSIONS = [
+    public const array PERMISSIONS = [
         'roles.view',
         'roles.create',
         'roles.update',
@@ -27,6 +30,9 @@ class RolePermissionSeeder extends Seeder
         'users.delete',
     ];
 
+    /**
+     * Run the database seeds.
+     */
     public function run(): void
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
@@ -35,10 +41,8 @@ class RolePermissionSeeder extends Seeder
             Permission::findOrCreate($permission, 'web');
         }
 
-        // admin: bypassa ogni check via Gate::before (vedi AppServiceProvider).
-        // Manteniamo anche i permessi espliciti sincronizzati per coerenza.
-        Role::findOrCreate('admin', 'web')->syncPermissions(self::PERMISSIONS);
-
-        Role::findOrCreate('user', 'web');
+        // The admin role passes every check through Gate::before, so it needs no permissions.
+        Role::findOrCreate(Role::ADMIN, 'web');
+        Role::findOrCreate(Role::USER, 'web');
     }
 }

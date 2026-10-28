@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import {
     LogOut01,
     Monitor01,
@@ -7,12 +7,10 @@ import {
     Sun,
 } from '@untitledui/icons';
 import type { FC } from 'react';
-
 import { Dropdown } from '@/components/base/dropdown/dropdown';
+import { UserInfo } from '@/components/user-info';
 import type { Appearance } from '@/hooks/use-appearance';
 import { useAppearance } from '@/hooks/use-appearance';
-import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
-import { toUrl } from '@/lib/utils';
 import { logout } from '@/routes';
 import { edit } from '@/routes/profile';
 
@@ -21,46 +19,53 @@ const themeOptions: {
     label: string;
     icon: FC<{ className?: string }>;
 }[] = [
-    { value: 'light', label: 'Chiaro', icon: Sun },
-    { value: 'dark', label: 'Scuro', icon: Moon01 },
-    { value: 'system', label: 'Sistema', icon: Monitor01 },
+    { value: 'light', label: 'Tema chiaro', icon: Sun },
+    { value: 'dark', label: 'Tema scuro', icon: Moon01 },
+    { value: 'system', label: 'Tema di sistema', icon: Monitor01 },
 ];
 
-export function UserMenuContent() {
-    const cleanup = useMobileNavigation();
+/** Contents of the user dropdown, shared by the sidebar and the header. */
+const UserMenuContent = () => {
+    const { auth } = usePage().props;
     const { appearance, updateAppearance } = useAppearance();
 
     return (
         <>
-            <Dropdown.Item
-                label="Impostazioni profilo"
-                icon={Settings01}
-                onAction={() => {
-                    cleanup();
-                    router.visit(toUrl(edit()));
-                }}
-            />
-            <Dropdown.Separator />
-            {themeOptions.map((option) => (
+            <div className="flex items-center gap-3 border-b border-secondary px-4 py-3">
+                <UserInfo user={auth.user} showEmail />
+            </div>
+
+            <Dropdown.Menu>
                 <Dropdown.Item
-                    key={option.value}
-                    label={option.label}
-                    icon={option.icon}
-                    addon={appearance === option.value ? 'Attivo' : undefined}
-                    onAction={() => updateAppearance(option.value)}
+                    label="Impostazioni"
+                    icon={Settings01}
+                    href={edit().url}
                 />
-            ))}
-            <Dropdown.Separator />
-            <Dropdown.Item
-                label="Esci"
-                icon={LogOut01}
-                data-test="logout-button"
-                onAction={() => {
-                    cleanup();
-                    router.flushAll();
-                    router.post(toUrl(logout()));
-                }}
-            />
+                <Dropdown.Separator />
+                {themeOptions.map((option) => (
+                    <Dropdown.Item
+                        key={option.value}
+                        label={option.label}
+                        icon={option.icon}
+                        addon={
+                            appearance === option.value ? 'Attivo' : undefined
+                        }
+                        onAction={() => updateAppearance(option.value)}
+                    />
+                ))}
+                <Dropdown.Separator />
+                <Dropdown.Item
+                    label="Esci"
+                    icon={LogOut01}
+                    data-test="logout-button"
+                    onAction={() => {
+                        router.flushAll();
+                        router.post(logout().url);
+                    }}
+                />
+            </Dropdown.Menu>
         </>
     );
-}
+};
+
+export { UserMenuContent };

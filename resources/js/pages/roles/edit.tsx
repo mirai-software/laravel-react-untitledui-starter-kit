@@ -1,30 +1,29 @@
 import { Head } from '@inertiajs/react';
-
-import Heading from '@/components/heading';
-import RoleForm, {
-    type PermissionGroup,
-    type RoleFormData,
+import { PageHeader } from '@/components/page-header';
+import type {
+    PermissionGroup,
+    RoleFormRole,
 } from '@/components/roles/role-form';
+import { RoleForm } from '@/components/roles/role-form';
+import { roleLabel } from '@/lib/roles';
 import { dashboard } from '@/routes';
 import { index } from '@/routes/roles';
-import type { PageWithBreadcrumbs } from '@/types';
 
-type Props = {
-    role: RoleFormData;
+type EditRoleProps = {
+    role: RoleFormRole;
     permissionGroups: PermissionGroup[];
 };
 
-const EditRole: PageWithBreadcrumbs<Props> = ({ role, permissionGroups }) => (
+const EditRole = ({ role, permissionGroups }: EditRoleProps) => (
     <>
-        <Head title={`Modifica ruolo · ${role.name}`} />
-        <div className="flex h-full flex-1 flex-col gap-6 p-4">
-            <Heading
-                title="Modifica ruolo"
-                description="Aggiorna nome e permessi del ruolo."
+        <Head title={`Modifica ${roleLabel(role.name)}`} />
+
+        <div className="flex max-w-4xl flex-col gap-8 p-4 md:p-6">
+            <PageHeader
+                title={`Modifica il ruolo "${roleLabel(role.name)}"`}
+                description="Aggiorna il nome e i permessi del ruolo."
             />
-            <div className="max-w-3xl">
-                <RoleForm role={role} permissionGroups={permissionGroups} />
-            </div>
+            <RoleForm role={role} permissionGroups={permissionGroups} />
         </div>
     </>
 );

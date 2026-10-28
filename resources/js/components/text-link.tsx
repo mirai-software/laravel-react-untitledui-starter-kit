@@ -1,24 +1,23 @@
 import { Link } from '@inertiajs/react';
 import type { ComponentProps } from 'react';
+import { cx } from '@/utils/cx';
 
-import { cx } from '@/lib/utils';
+type TextLinkProps = ComponentProps<typeof Link>;
 
-type Props = ComponentProps<typeof Link>;
+/**
+ * Inline link styled like Untitled UI's "link-color" button.
+ * It uses Inertia's Link, so it also supports options like `method` (e.g. logout).
+ */
+const TextLink = ({ className, children, ...props }: TextLinkProps) => (
+    <Link
+        className={cx(
+            'rounded-xs font-semibold text-brand-secondary underline decoration-transparent underline-offset-2 outline-focus-ring transition duration-100 ease-linear hover:text-brand-secondary_hover hover:decoration-current focus-visible:outline-2 focus-visible:outline-offset-2',
+            className,
+        )}
+        {...props}
+    >
+        {children}
+    </Link>
+);
 
-export default function TextLink({
-    className = '',
-    children,
-    ...props
-}: Props) {
-    return (
-        <Link
-            className={cx(
-                'text-text-primary underline decoration-gray-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-gray-600',
-                className,
-            )}
-            {...props}
-        >
-            {children}
-        </Link>
-    );
-}
+export default TextLink;

@@ -1,26 +1,24 @@
 import { Head } from '@inertiajs/react';
-
-import Heading from '@/components/heading';
-import RoleForm, { type PermissionGroup } from '@/components/roles/role-form';
+import { PageHeader } from '@/components/page-header';
+import type { PermissionGroup } from '@/components/roles/role-form';
+import { RoleForm } from '@/components/roles/role-form';
 import { dashboard } from '@/routes';
 import { create, index } from '@/routes/roles';
-import type { PageWithBreadcrumbs } from '@/types';
 
-type Props = {
+type CreateRoleProps = {
     permissionGroups: PermissionGroup[];
 };
 
-const CreateRole: PageWithBreadcrumbs<Props> = ({ permissionGroups }) => (
+const CreateRole = ({ permissionGroups }: CreateRoleProps) => (
     <>
         <Head title="Nuovo ruolo" />
-        <div className="flex h-full flex-1 flex-col gap-6 p-4">
-            <Heading
+
+        <div className="flex max-w-4xl flex-col gap-8 p-4 md:p-6">
+            <PageHeader
                 title="Nuovo ruolo"
-                description="Crea un ruolo e assegna i permessi."
+                description="Crea un ruolo e scegli i suoi permessi."
             />
-            <div className="max-w-3xl">
-                <RoleForm permissionGroups={permissionGroups} />
-            </div>
+            <RoleForm permissionGroups={permissionGroups} />
         </div>
     </>
 );

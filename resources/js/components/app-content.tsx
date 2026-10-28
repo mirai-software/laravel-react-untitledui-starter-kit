@@ -1,41 +1,21 @@
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps } from 'react';
+import type { AppVariant } from '@/types';
+import { cx } from '@/utils/cx';
 
-import { cx } from '@/lib/utils';
-
-type Props = ComponentProps<'main'> & {
-    variant?: 'header' | 'sidebar';
-    children?: ReactNode;
+type AppContentProps = ComponentProps<'main'> & {
+    /** Kept so upstream's `app-sidebar-layout.tsx` works unchanged (see `AppShell`). */
+    variant?: AppVariant;
 };
 
-export function AppContent({
-    variant = 'header',
+const AppContent = ({
+    variant: _variant,
     children,
     className,
     ...props
-}: Props) {
-    if (variant === 'sidebar') {
-        return (
-            <main
-                className={cx(
-                    'flex w-full min-w-0 flex-1 flex-col overflow-x-hidden',
-                    className,
-                )}
-                {...props}
-            >
-                {children}
-            </main>
-        );
-    }
+}: AppContentProps) => (
+    <main className={cx('flex min-w-0 flex-1 flex-col', className)} {...props}>
+        {children}
+    </main>
+);
 
-    return (
-        <main
-            className={cx(
-                'mx-auto flex h-full w-full max-w-7xl flex-1 flex-col gap-4 rounded-xl',
-                className,
-            )}
-            {...props}
-        >
-            {children}
-        </main>
-    );
-}
+export { AppContent };

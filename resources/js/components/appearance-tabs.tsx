@@ -1,49 +1,65 @@
 import { Monitor01, Moon01, Sun } from '@untitledui/icons';
-import type { ComponentType, HTMLAttributes, SVGAttributes } from 'react';
-
+import type { FC, HTMLAttributes } from 'react';
 import type { Appearance } from '@/hooks/use-appearance';
 import { useAppearance } from '@/hooks/use-appearance';
-import { cx } from '@/lib/utils';
+import { cx } from '@/utils/cx';
 
-export default function AppearanceToggleTab({
-    className = '',
+const tabs: {
+    value: Appearance;
+    icon: FC<{ className?: string }>;
+    label: string;
+}[] = [
+    { value: 'light', icon: Sun, label: 'Chiaro' },
+    { value: 'dark', icon: Moon01, label: 'Scuro' },
+    { value: 'system', icon: Monitor01, label: 'Sistema' },
+];
+
+const AppearanceTabs = ({
+    className,
     ...props
-}: HTMLAttributes<HTMLDivElement>) {
+}: HTMLAttributes<HTMLDivElement>) => {
     const { appearance, updateAppearance } = useAppearance();
-
-    const tabs: {
-        value: Appearance;
-        icon: ComponentType<SVGAttributes<SVGElement>>;
-        label: string;
-    }[] = [
-        { value: 'light', icon: Sun, label: 'Chiaro' },
-        { value: 'dark', icon: Moon01, label: 'Scuro' },
-        { value: 'system', icon: Monitor01, label: 'Sistema' },
-    ];
 
     return (
         <div
+            role="group"
+            aria-label="Tema"
             className={cx(
-                'inline-flex gap-1 rounded-lg bg-bg-secondary p-1 dark:bg-bg-secondary',
+                'inline-flex w-fit gap-1 rounded-lg bg-secondary p-1 ring-1 ring-secondary ring-inset',
                 className,
             )}
             {...props}
         >
-            {tabs.map(({ value, icon: Icon, label }) => (
-                <button
-                    key={value}
-                    onClick={() => updateAppearance(value)}
-                    className={cx(
-                        'flex items-center rounded-md px-3.5 py-1.5 transition-colors',
-                        appearance === value
-                            ? 'bg-bg-primary shadow-xs dark:bg-bg-tertiary'
-                            : 'text-text-tertiary hover:bg-neutral-200/60 hover:text-black dark:hover:bg-neutral-700/60',
-                    )}
-                >
-                    <Icon className="-ml-1 h-4 w-4" />
-                    <span className="ml-1.5 text-sm">{label}</span>
-                </button>
-            ))}
+            {tabs.map(({ value, icon: Icon, label }) => {
+                const isActive = appearance === value;
+
+                return (
+                    <button
+                        key={value}
+                        type="button"
+                        aria-pressed={isActive}
+                        onClick={() => updateAppearance(value)}
+                        className={cx(
+                            'flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold outline-focus-ring transition duration-100 ease-linear focus-visible:outline-2 focus-visible:outline-offset-2',
+                            isActive
+                                ? 'bg-primary text-secondary shadow-xs ring-1 ring-primary ring-inset'
+                                : 'text-quaternary hover:text-secondary',
+                        )}
+                    >
+                        <Icon
+                            className={cx(
+                                'size-4',
+                                isActive
+                                    ? 'text-fg-secondary'
+                                    : 'text-fg-quaternary',
+                            )}
+                        />
+                        {label}
+                    </button>
+                );
+            })}
         </div>
     );
-}
+};
+
+export default AppearanceTabs;

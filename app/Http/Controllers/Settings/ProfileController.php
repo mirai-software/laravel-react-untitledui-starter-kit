@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
@@ -13,30 +11,23 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
-use Spatie\RouteAttributes\Attributes\Delete;
-use Spatie\RouteAttributes\Attributes\Get;
-use Spatie\RouteAttributes\Attributes\Middleware;
-use Spatie\RouteAttributes\Attributes\Patch;
 
-#[Middleware('auth')]
 class ProfileController extends Controller
 {
     /**
      * Show the user's profile settings page.
      */
-    #[Get('settings/profile', name: 'profile.edit')]
     public function edit(Request $request): Response
     {
         return Inertia::render('settings/profile', [
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
-            'status'          => $request->session()->get('status'),
+            'status' => $request->session()->get('status'),
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-    #[Patch('settings/profile', name: 'profile.update')]
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $request->user()->fill($request->validated());
@@ -47,13 +38,14 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
+        Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
+
         return to_route('profile.edit');
     }
 
     /**
      * Delete the user's profile.
      */
-    #[Delete('settings/profile', name: 'profile.destroy', middleware: 'verified')]
     public function destroy(ProfileDeleteRequest $request): RedirectResponse
     {
         $user = $request->user();

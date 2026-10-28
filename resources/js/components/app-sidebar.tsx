@@ -1,76 +1,138 @@
 import { Link } from '@inertiajs/react';
-import { Grid01, Settings01, Shield01, Users01 } from '@untitledui/icons';
-
+import { Grid01, Shield01, Users01, X as CloseIcon } from '@untitledui/icons';
+import {
+    Button as AriaButton,
+    Dialog as AriaDialog,
+    Modal as AriaModal,
+    ModalOverlay as AriaModalOverlay,
+} from 'react-aria-components';
+import AppLogo from '@/components/app-logo';
 import { useSidebar } from '@/components/app-shell';
 import { NavList } from '@/components/application/app-navigation/base-components/nav-list';
 import type { NavItemType } from '@/components/application/app-navigation/config';
 import { NavUser } from '@/components/nav-user';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { usePermissions } from '@/hooks/use-permissions';
-import { cx, toUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
-import { edit } from '@/routes/profile';
 import { index as rolesIndex } from '@/routes/roles';
 import { index as usersIndex } from '@/routes/users';
+import { cx } from '@/utils/cx';
 
-import AppLogo from './app-logo';
+/** The nav item for the current page, also when it's a sub-page (e.g. `/users/1/edit`). */
+const findActiveHref = (
+    items: NavItemType[],
+    currentUrl: string,
+): string | undefined =>
+    items.find(
+        (item) =>
+            item.href !== undefined &&
+            (currentUrl === item.href ||
+                currentUrl.startsWith(`${item.href}/`)),
+    )?.href;
 
-export function AppSidebar() {
-    const { can } = usePermissions();
-    const { isOpen, isMobile, setOpen } = useSidebar();
+const SidebarContent = () => {
     const { currentUrl } = useCurrentUrl();
+    const { can } = usePermissions();
+
     const mainNavItems: NavItemType[] = [
-        { label: 'Dashboard', href: toUrl(dashboard()), icon: Grid01 },
+        { label: 'Dashboard', href: dashboard().url, icon: Grid01 },
         ...(can('roles.view')
-            ? [{ label: 'Ruoli', href: toUrl(rolesIndex()), icon: Shield01 }]
+            ? [{ label: 'Ruoli', href: rolesIndex().url, icon: Shield01 }]
             : []),
         ...(can('users.view')
-            ? [{ label: 'Utenti', href: toUrl(usersIndex()), icon: Users01 }]
+            ? [{ label: 'Utenti', href: usersIndex().url, icon: Users01 }]
             : []),
-        { label: 'Settings', href: toUrl(edit()), icon: Settings01 },
     ];
 
     return (
-        <>
-            {/* Mobile overlay */}
-            {isMobile && isOpen && (
-                <div
-                    className="fixed inset-0 z-40 bg-gray-950/60"
-                    onClick={() => setOpen(false)}
-                />
-            )}
+        <div className="flex h-full flex-col bg-primary pt-5">
+            <div className="px-4 lg:px-5">
+                <Link
+                    href={dashboard()}
+                    prefetch
+                    className="flex items-center gap-2.5 rounded-md outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2"
+                >
+                    <AppLogo />
+                </Link>
+            </div>
 
+            <nav aria-label="Navigazione principale">
+                <NavList
+                    activeUrl={findActiveHref(mainNavItems, currentUrl)}
+                    items={mainNavItems}
+                />
+            </nav>
+
+            <div className="mt-auto border-t border-secondary px-2 py-3 lg:px-3">
+                <NavUser />
+            </div>
+        </div>
+    );
+};
+
+const AppSidebar = () => {
+    const { isOpen, isMobileOpen, setMobileOpen } = useSidebar();
+
+    return (
+        <>
             <aside
                 className={cx(
-                    'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border-secondary bg-bg-primary transition-transform duration-200 ease-in-out lg:relative lg:z-auto lg:translate-x-0',
-                    isOpen ? 'translate-x-0' : '-translate-x-full',
+                    'sticky top-0 hidden h-dvh w-72 shrink-0 border-r border-secondary',
+                    isOpen && 'lg:block',
                 )}
             >
-                {/* Logo */}
-                <div className="flex h-16 shrink-0 items-center px-4">
-                    <Link
-                        href={dashboard()}
-                        prefetch
-                        className="flex items-center gap-2"
-                    >
-                        <AppLogo />
-                    </Link>
-                </div>
-
-                {/* Main navigation */}
-                <div className="flex-1 overflow-y-auto">
-                    <NavList
-                        activeUrl={currentUrl}
-                        items={mainNavItems}
-                        className="mt-0"
-                    />
-                </div>
-
-                {/* User */}
-                <div className="shrink-0 border-t border-border-secondary">
-                    <NavUser />
-                </div>
+                <SidebarContent />
             </aside>
+
+            <AriaModalOverlay
+                isOpen={isMobileOpen}
+                onOpenChange={setMobileOpen}
+                isDismissable
+                className={({ isEntering, isExiting }) =>
+                    cx(
+                        'fixed inset-0 z-50 bg-overlay/70 pr-16 backdrop-blur-md lg:hidden',
+                        isEntering &&
+                            'animate-in duration-300 ease-in-out fade-in',
+                        isExiting &&
+                            'animate-out duration-200 ease-in-out fade-out',
+                    )
+                }
+            >
+                <AriaModal className="h-dvh w-full max-w-72">
+                    <AriaDialog
+                        aria-label="Menu di navigazione"
+                        className="h-full outline-hidden"
+                    >
+                        {/* Inside the modal: React Aria makes everything outside it inert,
+                            so a button outside couldn't be reached by keyboard or screen readers. */}
+                        <AriaButton
+                            aria-label="Chiudi il menu"
+                            onPress={() => setMobileOpen(false)}
+                            className="fixed top-2.5 right-3 flex cursor-pointer items-center justify-center rounded-lg p-2 text-fg-white/70 outline-focus-ring hover:bg-white/10 hover:text-fg-white focus-visible:outline-2 focus-visible:outline-offset-2"
+                        >
+                            <CloseIcon className="size-6" />
+                        </AriaButton>
+
+                        {/* Close as soon as a link is tapped, also when it points to the current page
+                            (Inertia doesn't fire `navigate` for same-URL visits). */}
+                        <div
+                            className="h-full"
+                            onClickCapture={(event) => {
+                                if (
+                                    event.target instanceof Element &&
+                                    event.target.closest('a[href]')
+                                ) {
+                                    setMobileOpen(false);
+                                }
+                            }}
+                        >
+                            <SidebarContent />
+                        </div>
+                    </AriaDialog>
+                </AriaModal>
+            </AriaModalOverlay>
         </>
     );
-}
+};
+
+export { AppSidebar };

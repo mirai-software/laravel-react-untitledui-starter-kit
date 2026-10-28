@@ -1,27 +1,40 @@
 import { Head } from '@inertiajs/react';
-
-import Heading from '@/components/heading';
-import UserForm, { type UserFormData } from '@/components/users/user-form';
+import { PageHeader } from '@/components/page-header';
+import type { UserFormUser } from '@/components/users/user-form';
+import { UserForm } from '@/components/users/user-form';
 import { dashboard } from '@/routes';
 import { index } from '@/routes/users';
-import type { PageWithBreadcrumbs } from '@/types';
 
-type Props = {
-    user: UserFormData;
+type EditUserProps = {
+    user: UserFormUser;
+    canAssignRoles: boolean;
     roles: string[];
+    lockedRoles: string[];
+    passwordRules: string;
 };
 
-const EditUser: PageWithBreadcrumbs<Props> = ({ user, roles }) => (
+const EditUser = ({
+    user,
+    canAssignRoles,
+    roles,
+    lockedRoles,
+    passwordRules,
+}: EditUserProps) => (
     <>
-        <Head title={`Modifica utente · ${user.name}`} />
-        <div className="flex h-full flex-1 flex-col gap-6 p-4">
-            <Heading
-                title="Modifica utente"
-                description={`Aggiorna i dati e i ruoli di ${user.name}.`}
+        <Head title={`Modifica ${user.name}`} />
+
+        <div className="flex max-w-4xl flex-col gap-8 p-4 md:p-6">
+            <PageHeader
+                title={`Modifica ${user.name}`}
+                description="Aggiorna i dati e i ruoli dell'utente."
             />
-            <div className="max-w-3xl">
-                <UserForm user={user} roles={roles} />
-            </div>
+            <UserForm
+                user={user}
+                canAssignRoles={canAssignRoles}
+                roles={roles}
+                lockedRoles={lockedRoles}
+                passwordRules={passwordRules}
+            />
         </div>
     </>
 );

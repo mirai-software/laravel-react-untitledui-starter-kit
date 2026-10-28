@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Tests\Feature\Roles;
 
 use App\Models\Permission;
@@ -15,118 +13,163 @@ class RoleManagementTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guests_are_redirected_from_roles_index(): void
+    public function test_guests_are_redirected_to_the_login_page()
     {
-        $this->get(route('roles.index'))->assertRedirect(route('login'));
+        $response = $this->get(route('roles.index'));
+
+        $response->assertRedirect(route('login'));
     }
 
-    public function test_user_without_permission_cannot_view_roles(): void
+    public function test_users_without_permission_cannot_view_roles()
     {
-        $this->actingAs(User::factory()->create())
-            ->get(route('roles.index'))
-            ->assertForbidden();
+        $response = $this->actingAs(User::factory()->create())->get(route('roles.index'));
+
+        $response->assertForbidden();
     }
 
-    public function test_user_with_view_permission_sees_roles_index(): void
+    public function test_users_with_the_view_permission_see_the_roles_list()
     {
-        $this->actingAs($this->userWith(['roles.view']))
-            ->get(route('roles.index'))
-            ->assertOk()
-            ->assertInertia(
-                fn (AssertableInertia $page): AssertableInertia => $page
-                    ->component('roles/index')
-                    ->has('roles'),
-            );
+        Role::findOrCreate(Role::ADMIN);
+
+        $response = $this->actingAs($this->userWith(['roles.view']))->get(route('roles.index'));
+
+        $response->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('roles/index')
+            ->where('roles.0.name', Role::ADMIN)
+            ->where('roles.0.is_protected', true)
+            ->where('roles.0.has_all_permissions', true)
+            ->where('roles.0.can', ['update' => false, 'delete' => false]));
     }
 
-    public function test_admin_bypasses_permission_checks(): void
+    public function test_the_admin_role_cannot_be_edited()
     {
-        $this->actingAs($this->admin())
-            ->get(route('roles.index'))
-            ->assertOk();
+        $role = Role::findOrCreate(Role::ADMIN);
+
+        $this->actingAs($this->admin())->get(route('roles.edit', $role))->assertForbidden();
+        $this->actingAs($this->admin())->put(route('roles.update', $role), [
+            'name' => Role::ADMIN,
+            'permissions' => ['roles.view'],
+        ])->assertForbidden();
     }
 
-    public function test_user_with_create_permission_can_store_role_with_permissions(): void
+    public function test_admins_pass_every_permission_check()
+    {
+        $response = $this->actingAs($this->admin())->get(route('roles.create'));
+
+        $response->assertOk();
+    }
+
+    public function test_permissions_are_grouped_by_the_part_before_the_first_dot()
+    {
+        Permission::findOrCreate('reports.sales.view');
+        Permission::findOrCreate('reports.sales.export');
+
+        $response = $this->actingAs($this->admin())->get(route('roles.create'));
+
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('permissionGroups', fn ($groups) => collect($groups)->firstWhere('group', 'reports')['permissions']
+                == [
+                    ['id' => Permission::findByName('reports.sales.export')->id, 'name' => 'reports.sales.export', 'action' => 'sales.export'],
+                    ['id' => Permission::findByName('reports.sales.view')->id, 'name' => 'reports.sales.view', 'action' => 'sales.view'],
+                ]));
+    }
+
+    public function test_roles_can_be_created_with_permissions()
     {
         Permission::findOrCreate('roles.view');
         Permission::findOrCreate('roles.update');
 
-        $this->actingAs($this->userWith(['roles.create']))
-            ->post(route('roles.store'), [
-                'name'        => 'editor',
-                'permissions' => ['roles.view', 'roles.update'],
-            ])
-            ->assertRedirect(route('roles.index'));
+        $response = $this->actingAs($this->userWith(['roles.create']))->post(route('roles.store'), [
+            'name' => 'editor',
+            'permissions' => ['roles.view', 'roles.update'],
+        ]);
 
-        $role = Role::findByName('editor');
-
+        $response->assertRedirect(route('roles.index'));
         $this->assertEqualsCanonicalizing(
             ['roles.view', 'roles.update'],
-            $role->permissions->pluck('name')->all(),
+            Role::findByName('editor')->permissions->pluck('name')->all(),
         );
     }
 
-    public function test_user_without_create_permission_cannot_store_role(): void
+    public function test_users_without_the_create_permission_cannot_create_roles()
     {
-        $this->actingAs(User::factory()->create())
-            ->post(route('roles.store'), ['name' => 'editor'])
-            ->assertForbidden();
+        $response = $this->actingAs($this->userWith(['roles.view']))->post(route('roles.store'), ['name' => 'editor']);
 
+        $response->assertForbidden();
         $this->assertDatabaseMissing('roles', ['name' => 'editor']);
     }
 
-    public function test_store_validates_unique_name(): void
+    public function test_role_names_must_be_unique()
     {
         Role::findOrCreate('editor');
 
-        $this->actingAs($this->userWith(['roles.create']))
-            ->post(route('roles.store'), ['name' => 'editor'])
-            ->assertSessionHasErrors('name');
+        $response = $this->actingAs($this->userWith(['roles.create']))->post(route('roles.store'), ['name' => 'editor']);
+
+        $response->assertSessionHasErrors('name');
     }
 
-    public function test_role_permissions_can_be_updated(): void
+    public function test_roles_can_be_renamed_and_their_permissions_changed()
     {
         Permission::findOrCreate('roles.view');
         Permission::findOrCreate('roles.update');
         $role = Role::findOrCreate('editor');
         $role->givePermissionTo('roles.view');
 
-        $this->actingAs($this->userWith(['roles.update']))
-            ->put(route('roles.update', $role), [
-                'name'        => 'redattore',
-                'permissions' => ['roles.update'],
-            ])
-            ->assertRedirect(route('roles.index'));
+        $response = $this->actingAs($this->userWith(['roles.update']))->put(route('roles.update', $role), [
+            'name' => 'redattore',
+            'permissions' => ['roles.update'],
+        ]);
 
+        $response->assertRedirect(route('roles.index'));
         $role->refresh();
-
         $this->assertSame('redattore', $role->name);
-        $this->assertEqualsCanonicalizing(
-            ['roles.update'],
-            $role->permissions->pluck('name')->all(),
-        );
+        $this->assertEqualsCanonicalizing(['roles.update'], $role->permissions->pluck('name')->all());
     }
 
-    public function test_role_can_be_deleted(): void
+    public function test_protected_roles_keep_their_name()
+    {
+        $role = Role::findOrCreate(Role::USER);
+
+        $response = $this->actingAs($this->userWith(['roles.update']))->put(route('roles.update', $role), [
+            'name' => 'superuser',
+            'permissions' => [],
+        ]);
+
+        $response->assertRedirect(route('roles.index'));
+        $this->assertSame(Role::USER, $role->fresh()?->name);
+    }
+
+    public function test_roles_can_be_deleted()
     {
         $role = Role::findOrCreate('editor');
 
-        $this->actingAs($this->userWith(['roles.delete']))
-            ->delete(route('roles.destroy', $role))
-            ->assertRedirect(route('roles.index'));
+        $response = $this->actingAs($this->userWith(['roles.delete']))->delete(route('roles.destroy', $role));
 
+        $response->assertRedirect(route('roles.index'));
         $this->assertDatabaseMissing('roles', ['id' => $role->id]);
     }
 
-    public function test_protected_admin_role_cannot_be_deleted(): void
+    public function test_protected_roles_cannot_be_deleted()
     {
-        $role = Role::findOrCreate('admin');
+        foreach (Role::PROTECTED as $name) {
+            $role = Role::findOrCreate($name);
 
-        $this->actingAs($this->userWith(['roles.delete']))
-            ->delete(route('roles.destroy', $role))
-            ->assertForbidden();
+            $response = $this->actingAs($this->admin())->delete(route('roles.destroy', $role));
 
-        $this->assertDatabaseHas('roles', ['id' => $role->id]);
+            $response->assertForbidden();
+            $this->assertDatabaseHas('roles', ['id' => $role->id]);
+        }
+    }
+
+    public function test_users_without_the_update_or_delete_permission_cannot_change_roles()
+    {
+        $role = Role::findOrCreate('editor');
+        $viewer = $this->userWith(['roles.view']);
+
+        $this->actingAs($viewer)->put(route('roles.update', $role), ['name' => 'redattore'])->assertForbidden();
+        $this->actingAs($viewer)->delete(route('roles.destroy', $role))->assertForbidden();
+
+        $this->assertSame('editor', $role->fresh()?->name);
     }
 
     /**
@@ -145,9 +188,6 @@ class RoleManagementTest extends TestCase
 
     private function admin(): User
     {
-        $user = User::factory()->create();
-        $user->assignRole(Role::findOrCreate('admin'));
-
-        return $user;
+        return User::factory()->create()->assignRole(Role::findOrCreate(Role::ADMIN));
     }
 }

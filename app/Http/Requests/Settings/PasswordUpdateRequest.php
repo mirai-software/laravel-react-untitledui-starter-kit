@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Http\Requests\Settings;
 
 use App\Concerns\PasswordValidationRules;
@@ -21,7 +19,7 @@ class PasswordUpdateRequest extends FormRequest
     {
         return [
             'current_password' => $this->currentPasswordRules(),
-            'password'         => $this->passwordRules(),
+            'password' => $this->passwordRules(),
         ];
     }
 }

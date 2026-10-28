@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Http\Middleware;
 
 use App\Models\Permission;
@@ -42,17 +40,18 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user'        => $request->user(),
-                'permissions' => $this->permissions($request),
+                // Without relations: permission checks load roles and permissions on the user, which the page doesn't need.
+                'user' => $request->user()?->withoutRelations(),
+                'permissions' => fn (): array => $this->permissions($request),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }
 
     /**
-     * Permessi effettivi dell'utente, usati lato client per filtrare la
-     * navigazione. Il filtro passa per `can()`, quindi l'admin
-     * (bypass via Gate::before) riceve correttamente tutti i permessi.
+     * The current user's effective permissions, used by the frontend to show or hide navigation.
+     * They go through `can()`, so the admin (Gate::before) gets every permission. Shared lazily,
+     * so partial reloads that don't ask for `auth` skip the query.
      *
      * @return list<string>
      */
@@ -64,11 +63,11 @@ class HandleInertiaRequests extends Middleware
             return [];
         }
 
-        return Permission::query()
+        return array_values(Permission::query()
             ->orderBy('name')
-            ->pluck('name')
+            ->get(['name'])
+            ->map(fn (Permission $permission): string => $permission->name)
             ->filter(fn (string $name): bool => $user->can($name))
-            ->values()
-            ->all();
+            ->all());
     }
 }

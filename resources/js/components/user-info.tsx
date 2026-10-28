@@ -2,14 +2,14 @@ import { Avatar } from '@/components/base/avatar/avatar';
 import { useInitials } from '@/hooks/use-initials';
 import type { User } from '@/types';
 
-export function UserInfo({
-    user,
-    showEmail = false,
-}: {
+type UserInfoProps = {
     user: User;
     showEmail?: boolean;
-}) {
+};
+
+const UserInfo = ({ user, showEmail = false }: UserInfoProps) => {
     const getInitials = useInitials();
+
     return (
         <>
             <Avatar
@@ -18,14 +18,16 @@ export function UserInfo({
                 alt={user.name}
                 initials={getInitials(user.name)}
             />
-            <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
+            <div className="grid min-w-0 flex-1 text-left text-sm">
+                <span className="truncate font-semibold text-primary">
+                    {user.name}
+                </span>
                 {showEmail && (
-                    <span className="truncate text-xs text-text-tertiary">
-                        {user.email}
-                    </span>
+                    <span className="truncate text-tertiary">{user.email}</span>
                 )}
             </div>
         </>
     );
-}
+};
+
+export { UserInfo };

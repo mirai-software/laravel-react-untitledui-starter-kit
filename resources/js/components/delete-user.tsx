@@ -1,6 +1,6 @@
 import { Form } from '@inertiajs/react';
 import { useRef } from 'react';
-
+import { Heading as AriaHeading } from 'react-aria-components';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import {
     Dialog,
@@ -9,25 +9,27 @@ import {
     ModalOverlay,
 } from '@/components/application/modals/modal';
 import { Button } from '@/components/base/buttons/button';
-import { Input } from '@/components/base/input/input';
 import Heading from '@/components/heading';
+import PasswordInput from '@/components/password-input';
 
-export default function DeleteUser() {
+const DeleteUser = () => {
     const passwordInput = useRef<HTMLInputElement>(null);
 
     return (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
             <Heading
                 variant="small"
                 title="Elimina account"
-                description="Disattiva il tuo account e revoca l'accesso"
+                description="Elimina il tuo account: non potrai più accedere"
             />
-            <div className="border-error-300/30 bg-error-25 dark:border-error-500/20 dark:bg-error-950 space-y-4 rounded-lg border p-4">
-                <div className="text-error-600 dark:text-error-300 relative space-y-0.5">
-                    <p className="font-medium">Attenzione</p>
-                    <p className="text-sm">
-                        Procedi con cautela: l'account verrà disattivato e
-                        perderai l'accesso.
+
+            <div className="flex flex-col items-start gap-4 rounded-xl bg-error-primary p-4 ring-1 ring-error_subtle ring-inset">
+                <div className="flex flex-col gap-0.5 text-sm text-error-primary">
+                    <p className="font-semibold">Attenzione</p>
+                    <p>
+                        Procedi con cautela: dopo l'eliminazione non potrai più
+                        accedere. Solo un amministratore può riattivare
+                        l'account.
                     </p>
                 </div>
 
@@ -38,21 +40,29 @@ export default function DeleteUser() {
                     >
                         Elimina account
                     </Button>
+
                     <ModalOverlay isDismissable>
-                        <Modal>
+                        <Modal className="max-w-md">
                             <Dialog>
                                 {({ close }) => (
-                                    <>
-                                        <h2 className="text-lg font-semibold text-text-primary">
-                                            Vuoi davvero eliminare il tuo
-                                            account?
-                                        </h2>
-                                        <p className="mt-2 text-sm text-text-tertiary">
-                                            Una volta eliminato, il tuo account
-                                            verrà disattivato e perderai
-                                            l'accesso. Inserisci la password per
-                                            confermare.
-                                        </p>
+                                    <div className="flex flex-col gap-6 p-6">
+                                        <div className="flex flex-col gap-1">
+                                            <AriaHeading
+                                                slot="title"
+                                                className="text-lg font-semibold text-primary"
+                                            >
+                                                Vuoi davvero eliminare il tuo
+                                                account?
+                                            </AriaHeading>
+                                            <p className="text-sm text-tertiary">
+                                                Il tuo account verrà disattivato
+                                                e non potrai più accedere. I
+                                                dati restano conservati e un
+                                                amministratore può riattivarlo.
+                                                Inserisci la password per
+                                                confermare.
+                                            </p>
+                                        </div>
 
                                         <Form
                                             {...ProfileController.destroy.form()}
@@ -63,7 +73,7 @@ export default function DeleteUser() {
                                                 passwordInput.current?.focus()
                                             }
                                             resetOnSuccess
-                                            className="mt-4 space-y-6"
+                                            className="flex flex-col gap-6"
                                         >
                                             {({
                                                 resetAndClearErrors,
@@ -71,22 +81,23 @@ export default function DeleteUser() {
                                                 errors,
                                             }) => (
                                                 <>
-                                                    <Input
-                                                        type="password"
-                                                        name="password"
+                                                    <PasswordInput
                                                         ref={passwordInput}
-                                                        placeholder="Password"
+                                                        name="password"
+                                                        label="Password"
                                                         autoComplete="current-password"
-                                                        isInvalid={
-                                                            !!errors.password
-                                                        }
+                                                        placeholder="••••••••"
+                                                        autoFocus
+                                                        isInvalid={Boolean(
+                                                            errors.password,
+                                                        )}
                                                         hint={errors.password}
                                                     />
 
-                                                    <div className="flex justify-end gap-2">
+                                                    <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                                                         <Button
                                                             color="secondary"
-                                                            onClick={() => {
+                                                            onPress={() => {
                                                                 resetAndClearErrors();
                                                                 close();
                                                             }}
@@ -94,9 +105,12 @@ export default function DeleteUser() {
                                                             Annulla
                                                         </Button>
                                                         <Button
-                                                            color="primary-destructive"
                                                             type="submit"
+                                                            color="primary-destructive"
                                                             isDisabled={
+                                                                processing
+                                                            }
+                                                            isLoading={
                                                                 processing
                                                             }
                                                             data-test="confirm-delete-user-button"
@@ -107,7 +121,7 @@ export default function DeleteUser() {
                                                 </>
                                             )}
                                         </Form>
-                                    </>
+                                    </div>
                                 )}
                             </Dialog>
                         </Modal>
@@ -116,4 +130,6 @@ export default function DeleteUser() {
             </div>
         </div>
     );
-}
+};
+
+export default DeleteUser;

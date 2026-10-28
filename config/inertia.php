@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 return [
 
     /*
@@ -18,8 +16,8 @@ return [
     */
 
     'ssr' => [
-        'enabled' => env('INERTIA_SSR_ENABLED', true),
-        'url'     => 'http://127.0.0.1:13714',
+        'enabled' => true,
+        'url' => 'http://127.0.0.1:13714',
         // 'bundle' => base_path('bootstrap/ssr/ssr.mjs'),
 
     ],
