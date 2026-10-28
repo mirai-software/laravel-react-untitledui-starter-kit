@@ -13,6 +13,11 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
+    # The locked packages need PHP 8.4.1 or newer; Sail runs 8.5.
+    strategy:
+      matrix:
+        php-version: ['8.4', '8.5']
+
     # .env.example points at Sail's Postgres, which the runner doesn't have:
     # setup's migrations run on in-memory SQLite (tests use phpunit.xml's anyway).
     env:
@@ -28,14 +33,14 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2
         with:
-          php-version: '8.5'
+          php-version: ${{ matrix.php-version }}
           tools: composer:v2
           coverage: none
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: '22'
+          node-version: '24'
 
       - name: Setup Application
         run: composer setup
