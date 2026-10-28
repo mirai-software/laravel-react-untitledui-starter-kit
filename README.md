@@ -96,6 +96,8 @@ vendor/bin/sail stop           # ferma i container
 
 Tutti i comandi PHP, Artisan, Composer e Node passano da `vendor/bin/sail`.
 
+**Aggiornamenti di sicurezza di PHP.** `composer.json` accetta solo versioni di PHP corrette (oggi `~8.4.27 || ^8.5.12`, le correzioni di php2shell): su un server con una versione vulnerabile `composer install` si rifiuta di installare. Quando esce una nuova correzione di sicurezza, alza questi minimi e aggiorna PHP sui server; in locale `vendor/bin/sail build --no-cache` e `vendor/bin/sail up -d` ricostruiscono il container con l'ultima versione.
+
 Prima di ogni commit (le stesse verifiche che esegue la CI su GitHub, `composer ci:check`):
 
 ```bash

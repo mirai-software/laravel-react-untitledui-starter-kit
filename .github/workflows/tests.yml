@@ -13,7 +13,7 @@ jobs:
   ci:
     runs-on: ubuntu-latest
 
-    # The locked packages need PHP 8.4.1 or newer; Sail runs 8.5.
+    # composer.json accepts patched 8.4 and 8.5 only (php2shell fixes: 8.4.27, 8.5.12); Sail runs 8.5.
     strategy:
       matrix:
         php-version: ['8.4', '8.5']

@@ -16,17 +16,17 @@ if ! command -v docker >/dev/null 2>&1; then
 fi
 
 if [ ! -f vendor/bin/sail ]; then
-    # Serve Sail per avviare i container, ma Sail si installa con Composer. Non esiste
-    # un'immagine laravelsail/php85-composer: quella con PHP 8.4 scarica i pacchetti
-    # del composer.lock ignorando la versione di PHP, senza eseguirne gli script;
-    # gli script girano più sotto con "sail composer install", con il PHP 8.5 di Sail.
+    # Serve Sail per avviare i container, ma Sail si installa con Composer: l'immagine
+    # ufficiale di Composer scarica i pacchetti del composer.lock (ignorando le estensioni
+    # PHP che lì mancano) senza eseguirne gli script; gli script girano più sotto con
+    # "sail composer install", nel container di Sail.
     echo "==> Scarico le dipendenze Composer con un container Docker temporaneo..."
     docker run --rm \
         -u "$(id -u):$(id -g)" \
-        -v "$(pwd):/var/www/html" \
-        -w /var/www/html \
+        -v "$(pwd):/app" \
+        -w /app \
         -e COMPOSER_HOME=/tmp/composer \
-        laravelsail/php84-composer:latest \
+        composer:2 \
         composer install --ignore-platform-reqs --no-scripts
 fi
 
