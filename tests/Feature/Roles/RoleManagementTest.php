@@ -59,6 +59,21 @@ class RoleManagementTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_permissions_are_grouped_by_the_part_before_the_first_dot()
+    {
+        Permission::findOrCreate('reports.sales.view');
+        Permission::findOrCreate('reports.sales.export');
+
+        $response = $this->actingAs($this->admin())->get(route('roles.create'));
+
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('permissionGroups', fn ($groups) => collect($groups)->firstWhere('group', 'reports')['permissions']
+                == [
+                    ['id' => Permission::findByName('reports.sales.export')->id, 'name' => 'reports.sales.export', 'action' => 'sales.export'],
+                    ['id' => Permission::findByName('reports.sales.view')->id, 'name' => 'reports.sales.view', 'action' => 'sales.view'],
+                ]));
+    }
+
     public function test_roles_can_be_created_with_permissions()
     {
         Permission::findOrCreate('roles.view');

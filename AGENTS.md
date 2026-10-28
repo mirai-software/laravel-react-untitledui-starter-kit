@@ -205,6 +205,11 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 
 </laravel-boost-guidelines>
 
+<!--
+  Le convenzioni del team vanno qui, FUORI dal blocco <laravel-boost-guidelines>: `boost:update` riscrive
+  solo quel blocco. Modificare AGENTS.md: CLAUDE.md è un link simbolico a questo file.
+-->
+
 # Convenzioni di progetto
 
 ## Frontend (React / TypeScript)
@@ -231,6 +236,13 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - **Soft delete utenti**: `User` usa `SoftDeletes`. "Disattiva" = soft delete, reversibile con "Riattiva"; anche "Elimina account" nelle impostazioni disattiva soltanto.
 - **Modelli strict fuori produzione** ([nunomaduro/essentials](https://github.com/nunomaduro/essentials), `config/essentials.php`): le relazioni usate su una lista vanno caricate con `with()`, e una query con `get([...colonne])` deve selezionare tutte le colonne che poi si leggono. Nei test le chiamate HTTP esterne vanno simulate con `Http::fake()`.
 - **Test** in PHPUnit nello stile di upstream (metodi `test_*`, factory).
+
+## Aggiungere una sezione (es. Fatture)
+
+1. **Permessi**: una migrazione con `Permission::findOrCreate('fatture.view')` e gli altri (`resource.action`); il tipo `AppPermission` (`resources/js/types/permissions.ts`); le etichette italiane del gruppo e delle azioni in `groupLabels`/`actionLabels` (`resources/js/components/roles/role-form.tsx`). Le etichette dei ruoli nuovi vanno in `resources/js/lib/roles.ts`.
+2. **Backend**: policy che controlla i permessi; controller con le rotte come attributi e `#[Middleware(['auth', 'verified'])]`, `authorize()` o `FormRequest`.
+3. **Frontend**: `vendor/bin/sail artisan wayfinder:generate --with-form`, pagine in `resources/js/pages/fatture/`, voce nella sidebar (`resources/js/components/app-sidebar.tsx`) mostrata con `can('fatture.view')`.
+4. **Test**: accesso negato senza permesso, accesso con il permesso, e le azioni principali.
 
 ## Workflow
 

@@ -9,6 +9,7 @@ use App\Models\Role;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\RouteAttributes\Attributes\Middleware;
@@ -128,7 +129,8 @@ class RoleController extends Controller
     }
 
     /**
-     * All permissions, grouped by resource (the part before the dot, e.g. `users` in `users.view`).
+     * All permissions, grouped by resource: the part before the first dot (`users` in `users.view`);
+     * the rest is the action (`view`, or `sales.export` in `reports.sales.export`).
      *
      * @return Collection<int, array{group: string, permissions: list<array{id: int, name: string, action: string}>}>
      */
@@ -137,14 +139,14 @@ class RoleController extends Controller
         return Permission::query()
             ->orderBy('name')
             ->get(['id', 'name'])
-            ->groupBy(fn (Permission $permission): string => explode('.', $permission->name)[0])
+            ->groupBy(fn (Permission $permission): string => Str::before($permission->name, '.'))
             ->map(fn (Collection $permissions, string $group): array => [
                 'group' => $group,
                 'permissions' => array_values($permissions
                     ->map(fn (Permission $permission): array => [
                         'id' => (int) $permission->id,
                         'name' => $permission->name,
-                        'action' => explode('.', $permission->name)[1] ?? $permission->name,
+                        'action' => Str::after($permission->name, '.'),
                     ])
                     ->all()),
             ])
