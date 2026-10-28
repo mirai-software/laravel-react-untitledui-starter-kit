@@ -47,11 +47,12 @@ Il logo (`resources/js/components/app-logo-icon.tsx`) e le favicon in `public/` 
 
 ### Utente di prova e admin
 
-- `vendor/bin/sail artisan db:seed` crea ruoli e permessi e un utente di prova admin (`test@example.com`, password `password`). **Solo per lo sviluppo in locale.**
-- Per rendere admin un utente già registrato:
+- Ruoli e permessi li crea una migrazione, quindi esistono in ogni ambiente dopo `migrate`. I permessi nuovi di un progetto si aggiungono con altre migrazioni.
+- `vendor/bin/sail artisan db:seed` aggiunge un utente di prova admin (`test@example.com`, password `password`). **Solo per lo sviluppo in locale, mai in produzione.**
+- Solo un admin può assegnare il ruolo admin, e l'ultimo admin non può eliminare il proprio account. Per rendere admin un utente da terminale (anche se è disattivato, lo riattiva):
 
     ```bash
-    vendor/bin/sail artisan tinker --execute 'App\Models\User::where("email", "nome@esempio.it")->firstOrFail()->assignRole("admin");'
+    vendor/bin/sail artisan tinker --execute '$user = App\Models\User::withTrashed()->where("email", "nome@esempio.it")->firstOrFail(); $user->restore(); $user->assignRole("admin");'
     ```
 
 ## Sviluppo quotidiano

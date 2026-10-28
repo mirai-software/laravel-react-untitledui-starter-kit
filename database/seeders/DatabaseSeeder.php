@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -15,13 +16,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(RolePermissionSeeder::class);
-
         // User::factory(10)->create();
 
+        // Roles and permissions come from a migration; this only adds a local admin to sign in with.
         User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
-        ])->assignRole('admin');
+        ])->assignRole(Role::ADMIN);
     }
 }

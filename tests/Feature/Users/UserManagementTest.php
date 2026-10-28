@@ -276,15 +276,13 @@ class UserManagementTest extends TestCase
 
     public function test_admins_receive_every_permission()
     {
-        foreach (['roles.view', 'users.create', 'users.view'] as $permission) {
-            Permission::findOrCreate($permission);
-        }
-        $admin = $this->admin();
+        Permission::findOrCreate('reports.view');
 
-        $response = $this->actingAs($admin)->get(route('dashboard'));
+        $response = $this->actingAs($this->admin())->get(route('dashboard'));
 
         $response->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('auth.permissions', ['roles.view', 'users.create', 'users.view']));
+            ->where('auth.permissions', Permission::query()->orderBy('name')->pluck('name')->all())
+            ->where('auth.permissions', fn ($permissions) => collect($permissions)->contains('reports.view')));
     }
 
     /**
