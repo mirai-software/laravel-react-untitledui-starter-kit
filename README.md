@@ -124,6 +124,8 @@ Cosa serve al kit in produzione, oltre al deploy abituale di Laravel (dipendenze
 
 Le dipendenze (Laravel, Inertia, React, Untitled UI…) si aggiornano in ogni progetto con `vendor/bin/sail composer update` e `vendor/bin/sail npm update`. Gli aggiornamenti dal kit riguardano invece il codice copiato nel progetto: pagine, componenti, ruoli e utenti, configurazione.
 
+**Unire sempre con un merge commit.** Il collegamento con lo starter kit ufficiale (nel kit) e con il kit (nei progetti) sta nella storia git. Per questo una pull request verso `main` del kit, o una che porta in un progetto gli aggiornamenti del kit, si unisce con "Create a merge commit". "Squash and merge" e "Rebase and merge" riscrivono la storia: il collegamento si perde e l'aggiornamento successivo va in conflitto quasi ovunque. Nel repository del kit squash e rebase sono disattivati (Settings → General → Pull Requests); nei progetti conviene fare lo stesso.
+
 ### In un progetto: dal kit
 
 Il kit integra gli aggiornamenti dello starter kit ufficiale di Laravel, quindi un progetto collegato al kit (vedi [Collegare il progetto al kit](#collegare-il-progetto-al-kit)) li riceve tutti da lì, insieme alle correzioni del kit; non serve aggiungere anche lo starter kit ufficiale come remote.
