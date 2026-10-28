@@ -9,15 +9,18 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Fortify\Features;
 use Spatie\RouteAttributes\Attributes\Delete;
 use Spatie\RouteAttributes\Attributes\Get;
 use Spatie\RouteAttributes\Attributes\Middleware;
 use Spatie\RouteAttributes\Attributes\Post;
 use Spatie\RouteAttributes\Attributes\Put;
 use Spatie\RouteAttributes\Attributes\WithTrashed;
+use Throwable;
 
 #[Middleware(['auth', 'verified'])]
 class UserController extends Controller
@@ -79,16 +82,21 @@ class UserController extends Controller
     #[Post('users', name: 'users.store')]
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $user = User::create([
-            'name' => $request->validated('name'),
-            'email' => $request->validated('email'),
-            'password' => $request->validated('password'),
-        ]);
+        $user = DB::transaction(function () use ($request): User {
+            $user = User::create([
+                'name' => $request->validated('name'),
+                'email' => $request->validated('email'),
+                'password' => $request->validated('password'),
+            ]);
 
-        $user->syncRoles($this->canAssignRoles($request) ? $request->validated('roles') : [Role::USER]);
-        $user->sendEmailVerificationNotification();
+            $user->syncRoles($this->canAssignRoles($request) ? $request->validated('roles') : [Role::USER]);
 
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Utente creato.')]);
+            return $user;
+        });
+
+        Inertia::flash('toast', $this->sendVerificationLink($user)
+            ? ['type' => 'success', 'message' => __('Utente creato.')]
+            : ['type' => 'warning', 'message' => __('Utente creato, ma l\'email di verifica non è partita: potrà richiederla di nuovo dopo l\'accesso.')]);
 
         return to_route('users.index');
     }
@@ -119,7 +127,7 @@ class UserController extends Controller
 
     /**
      * Update a user. The password only changes when filled in, and a new email has to be verified
-     * again by its owner, who gets the verification link.
+     * again by its owner, who gets the verification link. Only an admin changes the roles.
      */
     #[Put('users/{user}', name: 'users.update')]
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
@@ -139,17 +147,17 @@ class UserController extends Controller
             $user->password = $request->validated('password');
         }
 
-        $user->save();
+        DB::transaction(function () use ($request, $user): void {
+            $user->save();
 
-        if ($this->canAssignRoles($request)) {
-            $user->syncRoles($request->validated('roles'));
-        }
+            if ($this->canAssignRoles($request)) {
+                $user->syncRoles($request->validated('roles'));
+            }
+        });
 
-        if ($emailChanged) {
-            $user->sendEmailVerificationNotification();
-        }
-
-        Inertia::flash('toast', ['type' => 'success', 'message' => __('Utente aggiornato.')]);
+        Inertia::flash('toast', ! $emailChanged || $this->sendVerificationLink($user)
+            ? ['type' => 'success', 'message' => __('Utente aggiornato.')]
+            : ['type' => 'warning', 'message' => __('Utente aggiornato, ma l\'email di verifica non è partita: potrà richiederla di nuovo dopo l\'accesso.')]);
 
         return to_route('users.index');
     }
@@ -186,6 +194,30 @@ class UserController extends Controller
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Utente riattivato.')]);
 
         return to_route('users.index');
+    }
+
+    /**
+     * Send the email verification link, when the app uses email verification. A failure (e.g. the
+     * mail server is down) is reported and doesn't undo the save: the user can ask for a new link
+     * from the verification page.
+     *
+     * @return bool Whether the link was sent, or didn't need sending.
+     */
+    private function sendVerificationLink(User $user): bool
+    {
+        if (! Features::enabled(Features::emailVerification())) {
+            return true;
+        }
+
+        try {
+            $user->sendEmailVerificationNotification();
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return false;
+        }
+
+        return true;
     }
 
     /**

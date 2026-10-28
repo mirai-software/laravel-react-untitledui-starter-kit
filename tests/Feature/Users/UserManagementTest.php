@@ -11,6 +11,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia;
+use Laravel\Fortify\Features;
 use Laravel\Passkeys\Passkeys;
 use Tests\TestCase;
 
@@ -113,6 +114,32 @@ class UserManagementTest extends TestCase
         $this->assertTrue($created->hasRole('editor'));
         $this->assertTrue(Hash::check('secret-password', $created->password));
         Notification::assertSentTo($created, VerifyEmail::class);
+    }
+
+    public function test_a_failing_verification_email_keeps_the_new_user_and_warns()
+    {
+        config(['mail.default' => 'rotto', 'mail.mailers.rotto' => ['transport' => 'inesistente']]);
+
+        $response = $this->actingAs($this->admin())->post(route('users.store'), $this->validPayload());
+
+        $response->assertRedirect(route('users.index'));
+        $response->assertInertiaFlash('toast.type', 'warning');
+        $this->assertDatabaseHas('users', ['email' => 'nuovo@example.com']);
+    }
+
+    public function test_no_verification_email_is_sent_when_the_app_does_not_verify_emails()
+    {
+        Notification::fake();
+        config(['fortify.features' => array_values(array_filter(
+            config('fortify.features'),
+            fn (string $feature): bool => $feature !== Features::emailVerification(),
+        ))]);
+
+        $response = $this->actingAs($this->admin())->post(route('users.store'), $this->validPayload());
+
+        $response->assertRedirect(route('users.index'));
+        $response->assertInertiaFlash('toast.type', 'success');
+        Notification::assertNothingSent();
     }
 
     public function test_users_created_by_non_admins_get_the_user_role()
