@@ -39,7 +39,7 @@ Serve solo **Docker**: PHP, Composer e Node girano nei container di [Sail](https
     ./install.sh
     ```
 
-    La prima volta Docker scarica e costruisce le immagini: qualche minuto. Lo script installa le dipendenze Composer con un container Docker temporaneo, crea `.env` da `.env.example`, avvia i container (app + Postgres), genera la chiave, esegue le migrazioni, installa e compila il frontend. Si può rilanciare: salta i passaggi già fatti.
+    La prima volta Docker scarica e costruisce le immagini: qualche minuto. Lo script installa le dipendenze Composer con un container Docker temporaneo, crea `.env` da `.env.example`, avvia i container (app + Postgres), genera la chiave, esegue le migrazioni, installa e compila il frontend. Si può rilanciare: salta i passaggi già fatti. Composer avvisa che tre pacchetti `dragon-code/*` sono abbandonati: li usa [laravel-lang](https://laravel-lang.com), che serve solo in sviluppo per aggiornare le traduzioni; non hanno vulnerabilità note e non vengono installati in produzione, quindi l'avviso si può ignorare.
 
 4. Crea il tuo account amministratore:
 
