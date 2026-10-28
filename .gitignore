@@ -29,6 +29,7 @@ yarn-error.log
 /.zed
 /.agents
 /.amp
+/.claude
 /.codex
 /.cursor
 /.factory
@@ -36,6 +37,18 @@ yarn-error.log
 /.junie
 /.kiro
 /.pi
+/.mcp.json
+/AGENTS.md
+/CLAUDE.md
+/boost.json
 /opencode.json
 /opencode.jsonc
+
+# Mirai kit: the AI setup is committed so every project shares it (upstream ignores it)
+!/.claude
+/.claude/settings.local.json
+!/.mcp.json
+!/AGENTS.md
+!/CLAUDE.md
+!/boost.json
 /scratchpad
