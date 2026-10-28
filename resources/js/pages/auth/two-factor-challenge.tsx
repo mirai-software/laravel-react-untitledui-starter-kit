@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react';
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import { PinInput } from '@/components/base/input/pin-input';
-import InputError from '@/components/input-error';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
 import { store } from '@/routes/two-factor/login';
 
@@ -22,7 +21,7 @@ const TwoFactorChallenge = () => {
                 title: 'Codice di recupero',
                 description:
                     "Conferma l'accesso al tuo account inserendo uno dei tuoi codici di recupero di emergenza.",
-                toggleText: 'accedi con un codice di autenticazione',
+                toggleText: 'accedere con un codice di autenticazione',
             };
         }
 
@@ -30,7 +29,7 @@ const TwoFactorChallenge = () => {
             title: 'Codice di autenticazione',
             description:
                 'Inserisci il codice di autenticazione fornito dalla tua app di autenticazione.',
-            toggleText: 'accedi con un codice di recupero',
+            toggleText: 'accedere con un codice di recupero',
         };
     }, [showRecoveryInput]);
 
@@ -73,7 +72,11 @@ const TwoFactorChallenge = () => {
                                     size="xs"
                                     disabled={processing}
                                     invalid={Boolean(errors.code)}
+                                    className="items-center text-center"
                                 >
+                                    <PinInput.Label className="sr-only">
+                                        Codice di autenticazione
+                                    </PinInput.Label>
                                     <PinInput.Group
                                         name="code"
                                         maxLength={OTP_MAX_LENGTH}
@@ -94,11 +97,12 @@ const TwoFactorChallenge = () => {
                                             ),
                                         )}
                                     </PinInput.Group>
+                                    {errors.code && (
+                                        <PinInput.Description isInvalid>
+                                            {errors.code}
+                                        </PinInput.Description>
+                                    )}
                                 </PinInput>
-                                <InputError
-                                    message={errors.code}
-                                    className="text-center"
-                                />
                             </div>
                         )}
 

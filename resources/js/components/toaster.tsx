@@ -16,8 +16,8 @@ const Toaster = (props: ToasterProps) => {
     return (
         <Sonner
             theme={appearance}
-            className="toaster group"
             position="bottom-right"
+            containerAriaLabel="Notifiche"
             style={
                 {
                     '--normal-bg': 'var(--color-bg-primary)',

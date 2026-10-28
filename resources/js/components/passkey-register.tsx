@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import InputError from '@/components/input-error';
+import { passkeyErrorMessage } from '@/lib/passkey-errors';
 
 type PasskeyRegistrationProps = {
     onSuccess: () => void;
@@ -40,13 +41,14 @@ const guessPasskeyName = (): string => {
 const PasskeyRegistration = ({ onSuccess }: PasskeyRegistrationProps) => {
     const [name, setName] = useState(guessPasskeyName);
     const [showForm, setShowForm] = useState(false);
-    const { register, isLoading, error, isSupported } = usePasskeyRegister({
-        onSuccess: () => {
-            setName('');
-            setShowForm(false);
-            onSuccess();
-        },
-    });
+    const { register, isLoading, errorInstance, isSupported } =
+        usePasskeyRegister({
+            onSuccess: () => {
+                setName('');
+                setShowForm(false);
+                onSuccess();
+            },
+        });
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -101,7 +103,7 @@ const PasskeyRegistration = ({ onSuccess }: PasskeyRegistrationProps) => {
                 autoFocus
             />
 
-            <InputError message={error} />
+            <InputError message={passkeyErrorMessage(errorInstance)} />
 
             <div className="flex gap-3">
                 <Button

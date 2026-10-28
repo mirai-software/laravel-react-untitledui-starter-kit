@@ -7,7 +7,7 @@ type InputErrorProps = HTMLAttributes<HTMLParagraphElement> & {
 
 /**
  * Error message for fields that can't show it as their own hint
- * (for example the PIN input or the passkey button).
+ * (for example the passkey button or a group of checkboxes).
  */
 const InputError = ({ message, className, ...props }: InputErrorProps) =>
     message ? (

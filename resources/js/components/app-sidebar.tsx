@@ -56,10 +56,12 @@ const SidebarContent = () => {
                 </Link>
             </div>
 
-            <NavList
-                activeUrl={findActiveHref(mainNavItems, currentUrl)}
-                items={mainNavItems}
-            />
+            <nav aria-label="Navigazione principale">
+                <NavList
+                    activeUrl={findActiveHref(mainNavItems, currentUrl)}
+                    items={mainNavItems}
+                />
+            </nav>
 
             <div className="mt-auto border-t border-secondary px-2 py-3 lg:px-3">
                 <NavUser />
@@ -96,19 +98,21 @@ const AppSidebar = () => {
                     )
                 }
             >
-                <AriaButton
-                    aria-label="Chiudi il menu"
-                    onPress={() => setMobileOpen(false)}
-                    className="fixed top-2.5 right-3 flex cursor-pointer items-center justify-center rounded-lg p-2 text-fg-white/70 outline-focus-ring hover:bg-white/10 hover:text-fg-white focus-visible:outline-2 focus-visible:outline-offset-2"
-                >
-                    <CloseIcon className="size-6" />
-                </AriaButton>
-
                 <AriaModal className="h-dvh w-full max-w-72">
                     <AriaDialog
                         aria-label="Menu di navigazione"
                         className="h-full outline-hidden"
                     >
+                        {/* Inside the modal: React Aria makes everything outside it inert,
+                            so a button outside couldn't be reached by keyboard or screen readers. */}
+                        <AriaButton
+                            aria-label="Chiudi il menu"
+                            onPress={() => setMobileOpen(false)}
+                            className="fixed top-2.5 right-3 flex cursor-pointer items-center justify-center rounded-lg p-2 text-fg-white/70 outline-focus-ring hover:bg-white/10 hover:text-fg-white focus-visible:outline-2 focus-visible:outline-offset-2"
+                        >
+                            <CloseIcon className="size-6" />
+                        </AriaButton>
+
                         {/* Close as soon as a link is tapped, also when it points to the current page
                             (Inertia doesn't fire `navigate` for same-URL visits). */}
                         <div

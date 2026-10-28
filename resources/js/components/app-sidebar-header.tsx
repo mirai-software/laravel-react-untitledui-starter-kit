@@ -9,7 +9,7 @@ type AppSidebarHeaderProps = {
 };
 
 const AppSidebarHeader = ({ breadcrumbs = [] }: AppSidebarHeaderProps) => {
-    const { isOpen, toggle, setMobileOpen } = useSidebar();
+    const { isOpen, toggle, isMobileOpen, setMobileOpen } = useSidebar();
 
     return (
         <header className="flex h-16 shrink-0 items-center gap-2 border-b border-secondary px-4 md:px-6">
@@ -18,6 +18,7 @@ const AppSidebarHeader = ({ breadcrumbs = [] }: AppSidebarHeaderProps) => {
                 size="sm"
                 iconLeading={Menu02}
                 aria-label="Apri il menu"
+                aria-expanded={isMobileOpen}
                 className="lg:hidden"
                 onPress={() => setMobileOpen(true)}
             />
@@ -25,11 +26,8 @@ const AppSidebarHeader = ({ breadcrumbs = [] }: AppSidebarHeaderProps) => {
                 color="tertiary"
                 size="sm"
                 iconLeading={LayoutLeft}
-                aria-label={
-                    isOpen
-                        ? 'Nascondi la barra laterale'
-                        : 'Mostra la barra laterale'
-                }
+                aria-label="Barra laterale"
+                aria-expanded={isOpen}
                 className="hidden lg:inline-flex"
                 onPress={toggle}
             />

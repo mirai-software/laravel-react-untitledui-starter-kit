@@ -11,7 +11,6 @@ import {
 } from '@/components/application/modals/modal';
 import { Button } from '@/components/base/buttons/button';
 import { PinInput } from '@/components/base/input/pin-input';
-import InputError from '@/components/input-error';
 import { useAppearance } from '@/hooks/use-appearance';
 import { useClipboard } from '@/hooks/use-clipboard';
 import { OTP_MAX_LENGTH } from '@/hooks/use-two-factor-auth';
@@ -152,7 +151,11 @@ const TwoFactorVerificationStep = ({
                             invalid={Boolean(
                                 errors?.confirmTwoFactorAuthentication?.code,
                             )}
+                            className="items-center text-center"
                         >
+                            <PinInput.Label className="sr-only">
+                                Codice di verifica
+                            </PinInput.Label>
                             <PinInput.Group
                                 name="code"
                                 maxLength={OTP_MAX_LENGTH}
@@ -171,13 +174,12 @@ const TwoFactorVerificationStep = ({
                                     ),
                                 )}
                             </PinInput.Group>
+                            {errors?.confirmTwoFactorAuthentication?.code && (
+                                <PinInput.Description isInvalid>
+                                    {errors.confirmTwoFactorAuthentication.code}
+                                </PinInput.Description>
+                            )}
                         </PinInput>
-                        <InputError
-                            message={
-                                errors?.confirmTwoFactorAuthentication?.code
-                            }
-                            className="text-center"
-                        />
                     </div>
 
                     <div className="flex gap-3">

@@ -1,14 +1,8 @@
 import { Key01, Trash01 } from '@untitledui/icons';
 import { useState } from 'react';
-import { Heading as AriaHeading } from 'react-aria-components';
-import {
-    Dialog,
-    DialogTrigger,
-    Modal,
-    ModalOverlay,
-} from '@/components/application/modals/modal';
 import { Badge } from '@/components/base/badges/badges';
 import { Button } from '@/components/base/buttons/button';
+import { ConfirmModal } from '@/components/confirm-modal';
 import type { Passkey } from '@/types/auth';
 
 type PasskeyItemProps = {
@@ -17,6 +11,7 @@ type PasskeyItemProps = {
 };
 
 const PasskeyItem = ({ passkey, onDelete }: PasskeyItemProps) => {
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
     const handleDelete = () => {
@@ -53,54 +48,24 @@ const PasskeyItem = ({ passkey, onDelete }: PasskeyItemProps) => {
                 </div>
             </div>
 
-            <DialogTrigger>
-                <Button
-                    color="tertiary-destructive"
-                    size="sm"
-                    iconLeading={Trash01}
-                    aria-label={`Rimuovi la passkey ${passkey.name}`}
-                />
+            <Button
+                color="tertiary-destructive"
+                size="sm"
+                iconLeading={Trash01}
+                aria-label={`Rimuovi la passkey ${passkey.name}`}
+                onPress={() => setIsConfirmOpen(true)}
+            />
 
-                <ModalOverlay isDismissable>
-                    <Modal className="max-w-md">
-                        <Dialog>
-                            {({ close }) => (
-                                <div className="flex flex-col gap-6 p-6">
-                                    <div className="flex flex-col gap-1">
-                                        <AriaHeading
-                                            slot="title"
-                                            className="text-lg font-semibold text-primary"
-                                        >
-                                            Rimuovi passkey
-                                        </AriaHeading>
-                                        <p className="text-sm text-tertiary">
-                                            Vuoi davvero rimuovere la passkey "
-                                            {passkey.name}"? Non potrai più
-                                            usarla per accedere.
-                                        </p>
-                                    </div>
-                                    <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-                                        <Button
-                                            color="secondary"
-                                            onPress={close}
-                                        >
-                                            Annulla
-                                        </Button>
-                                        <Button
-                                            color="primary-destructive"
-                                            onPress={handleDelete}
-                                            isDisabled={isDeleting}
-                                            isLoading={isDeleting}
-                                        >
-                                            Rimuovi passkey
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-                        </Dialog>
-                    </Modal>
-                </ModalOverlay>
-            </DialogTrigger>
+            <ConfirmModal
+                isOpen={isConfirmOpen}
+                onOpenChange={setIsConfirmOpen}
+                title="Rimuovi passkey"
+                description={`Vuoi davvero rimuovere la passkey "${passkey.name}"? Non potrai più usarla per accedere.`}
+                confirmLabel="Rimuovi passkey"
+                isDestructive
+                isProcessing={isDeleting}
+                onConfirm={handleDelete}
+            />
         </div>
     );
 };

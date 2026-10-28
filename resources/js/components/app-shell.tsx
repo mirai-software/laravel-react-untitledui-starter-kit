@@ -1,6 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
+import type { AppVariant } from '@/types';
 
 type SidebarContextValue = {
     /** Desktop sidebar visibility, remembered in the `sidebar_state` cookie. */
@@ -26,10 +27,17 @@ const rememberSidebarState = (isOpen: boolean): void => {
 
 type AppShellProps = {
     children: ReactNode;
-    variant?: 'header' | 'sidebar';
+    /**
+     * Kept so upstream's `app-sidebar-layout.tsx` works unchanged. The kit only has the
+     * sidebar layout: upstream's alternative top-bar layout isn't part of it.
+     */
+    variant?: AppVariant;
 };
 
-const AppShell = ({ children, variant = 'header' }: AppShellProps) => {
+/** Tailwind's `lg` breakpoint, where the sidebar replaces the mobile drawer. */
+const desktopQuery = '(min-width: 1024px)';
+
+const AppShell = ({ children }: AppShellProps) => {
     const { sidebarOpen } = usePage().props;
     const [isOpen, setIsOpen] = useState<boolean>(sidebarOpen);
     const [isMobileOpen, setMobileOpen] = useState(false);
@@ -37,21 +45,24 @@ const AppShell = ({ children, variant = 'header' }: AppShellProps) => {
     // Close the mobile drawer whenever a visit completes.
     useEffect(() => router.on('navigate', () => setMobileOpen(false)), []);
 
+    // Close it when the window grows to desktop width (e.g. a tablet rotated), where it's hidden.
+    useEffect(() => {
+        const desktop = window.matchMedia(desktopQuery);
+        const closeOnDesktop = (event: MediaQueryListEvent): void => {
+            if (event.matches) {
+                setMobileOpen(false);
+            }
+        };
+
+        desktop.addEventListener('change', closeOnDesktop);
+
+        return () => desktop.removeEventListener('change', closeOnDesktop);
+    }, []);
+
     const toggle = (): void => {
-        setIsOpen((wasOpen) => {
-            rememberSidebarState(!wasOpen);
-
-            return !wasOpen;
-        });
+        rememberSidebarState(!isOpen);
+        setIsOpen(!isOpen);
     };
-
-    if (variant === 'header') {
-        return (
-            <div className="flex min-h-dvh w-full flex-col bg-primary">
-                {children}
-            </div>
-        );
-    }
 
     return (
         <SidebarContext.Provider

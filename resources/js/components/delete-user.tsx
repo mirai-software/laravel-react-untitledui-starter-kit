@@ -20,7 +20,7 @@ const DeleteUser = () => {
             <Heading
                 variant="small"
                 title="Elimina account"
-                description="Disattiva il tuo account: non potrai più accedere"
+                description="Elimina il tuo account: non potrai più accedere"
             />
 
             <div className="flex flex-col items-start gap-4 rounded-xl bg-error-primary p-4 ring-1 ring-error_subtle ring-inset">

@@ -4,6 +4,7 @@ import { usePasskeyVerify } from '@laravel/passkeys/react';
 import { Key01 } from '@untitledui/icons';
 import { Button } from '@/components/base/buttons/button';
 import InputError from '@/components/input-error';
+import { passkeyErrorMessage } from '@/lib/passkey-errors';
 
 type PasskeyVerifyProps = {
     routes?: {
@@ -21,7 +22,7 @@ const PasskeyVerify = ({
     loadingLabel = 'Autenticazione in corso…',
     separator = "Oppure continua con l'email",
 }: PasskeyVerifyProps = {}) => {
-    const { verify, isLoading, error, isSupported } = usePasskeyVerify({
+    const { verify, isLoading, errorInstance, isSupported } = usePasskeyVerify({
         ...(routes && {
             routes: {
                 options: routes.options.url,
@@ -55,7 +56,10 @@ const PasskeyVerify = ({
                 >
                     {isLoading ? loadingLabel : label}
                 </Button>
-                <InputError message={error} className="text-center" />
+                <InputError
+                    message={passkeyErrorMessage(errorInstance)}
+                    className="text-center"
+                />
             </div>
 
             <div className="flex items-center gap-3">
