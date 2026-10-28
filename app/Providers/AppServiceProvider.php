@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\Passkey;
 use App\Models\Role;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -12,6 +14,8 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Inertia\ExceptionResponse;
 use Inertia\Inertia;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\Passkeys;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class AppServiceProvider extends ServiceProvider
@@ -32,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureDefaults();
         $this->configureAuthorization();
         $this->configureErrorPages();
+        $this->configurePasskeys();
     }
 
     /**
@@ -78,6 +83,15 @@ class AppServiceProvider extends ServiceProvider
                 $response->response,
             );
         });
+    }
+
+    /**
+     * Refuse passkey sign-ins for deactivated (soft-deleted) users, like password sign-ins.
+     */
+    protected function configurePasskeys(): void
+    {
+        Passkeys::usePasskeyModel(Passkey::class);
+        Passkeys::authorizeLoginUsing(fn (Request $request, PasskeyUser $user): bool => ! ($user instanceof User && $user->trashed()));
     }
 
     /**

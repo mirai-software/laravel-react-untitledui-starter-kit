@@ -2,12 +2,14 @@
 
 namespace Tests\Feature\Users;
 
+use App\Models\Passkey;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia;
+use Laravel\Passkeys\Passkeys;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
@@ -241,6 +243,22 @@ class UserManagementTest extends TestCase
         $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password']);
 
         $this->assertGuest();
+    }
+
+    public function test_deactivated_users_cannot_log_in_with_a_passkey()
+    {
+        $user = User::factory()->create();
+        $user->passkeys()->create(['name' => 'Portatile', 'credential_id' => 'credenziale-di-prova', 'credential' => []]);
+        $user->delete();
+
+        // A full WebAuthn sign-in needs a real authenticator: check the two steps that decide it.
+        $passkey = Passkey::where('credential_id', 'credenziale-di-prova')->firstOrFail();
+
+        $this->assertTrue($passkey->user?->is($user));
+        $this->assertFalse(Passkeys::allowsLogin(request(), $passkey));
+
+        $user->restore();
+        $this->assertTrue(Passkeys::allowsLogin(request(), $passkey->refresh()));
     }
 
     public function test_the_last_admin_cannot_delete_their_account()
