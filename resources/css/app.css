@@ -70,6 +70,12 @@
     body {
         @apply bg-primary text-primary;
     }
+
+    /* In dark mode Untitled UI lightens solid brand buttons on hover (to the 500 step, 3.1:1 with
+       white text); the darker 700 keeps the label readable. */
+    .dark-mode {
+        --color-bg-brand-solid_hover: var(--color-brand-700);
+    }
 }
 
 /* Untitled UI base styles. */
