@@ -1,10 +1,14 @@
 import type { PasskeyError } from '@laravel/passkeys';
 
 /**
- * Server messages laravel-lang doesn't translate yet. They can't be translated in
- * `lang/it.json`: `lang:update` puts laravel-lang's (English) values back.
+ * Server messages that arrive in English: the passkey ones laravel-lang doesn't translate yet
+ * (they can't be translated in `lang/it.json`: `lang:update` puts the English values back), and
+ * Laravel's own JSON errors for too many attempts, an expired page and a server error.
  */
 const serverMessages: Record<string, string> = {
+    'Too Many Attempts.': 'Troppi tentativi. Attendi un minuto e riprova.',
+    'CSRF token mismatch.': 'La pagina è scaduta: ricaricala e riprova.',
+    'Server Error': 'Si è verificato un errore. Riprova.',
     'Invalid credential format.': 'Formato della credenziale non valido.',
     'Passkey not recognized. It may have been removed from your account.':
         'Passkey non riconosciuta: potrebbe essere stata rimossa dal tuo account.',
