@@ -25,6 +25,7 @@ if [ ! -f vendor/bin/sail ]; then
         -u "$(id -u):$(id -g)" \
         -v "$(pwd):/var/www/html" \
         -w /var/www/html \
+        -e COMPOSER_HOME=/tmp/composer \
         laravelsail/php84-composer:latest \
         composer install --ignore-platform-reqs --no-scripts
 fi
@@ -35,7 +36,14 @@ if [ ! -f .env ]; then
 fi
 
 echo "==> Avvio i container (app + Postgres) e attendo che siano pronti..."
-vendor/bin/sail up -d --wait
+echo "    (la prima volta Docker costruisce l'immagine di Sail: qualche minuto)"
+if ! vendor/bin/sail up -d --wait; then
+    echo "" >&2
+    echo "Errore: i container non sono partiti. Se una porta è già occupata da un altro" >&2
+    echo "progetto, imposta APP_PORT, VITE_PORT o FORWARD_DB_PORT (e APP_URL) in .env" >&2
+    echo "e rilancia ./install.sh." >&2
+    exit 1
+fi
 
 # Completa l'installazione nel container (script dei pacchetti compresi); se una
 # esecuzione precedente si è interrotta, sistema anche le dipendenze mancanti.
@@ -55,7 +63,8 @@ vendor/bin/sail npm install
 vendor/bin/sail npm run build
 
 echo ""
-echo "==> Fatto. Apri http://localhost (o la porta APP_PORT del tuo .env)."
+APP_URL=$(grep '^APP_URL=' .env | cut -d= -f2- || true)
+echo "==> Fatto. Apri ${APP_URL:-http://localhost}."
 echo "    Crea il tuo account amministratore: vendor/bin/sail artisan app:create-admin"
 echo "    Le email (es. la verifica) finiscono nel log: vendor/bin/sail artisan pail"
 echo "    Per sviluppare con il ricaricamento automatico: vendor/bin/sail npm run dev"

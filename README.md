@@ -32,25 +32,26 @@ Tutto ciò che offre lo starter kit ufficiale resta: login, registrazione, reset
 Serve solo **Docker**: PHP, Composer e Node girano nei container di [Sail](https://laravel.com/docs/sail).
 
 1. Crea il repository del progetto da questo kit ("Use this template" su GitHub) e clonalo.
-2. Nella cartella del progetto lancia:
+2. Se hai già un altro progetto Sail avviato, le porte 80, 5173 e 5432 sono occupate: prima del passo successivo copia `.env.example` in `.env` e imposta (togliendo il `#`) `APP_PORT`, `VITE_PORT` e `FORWARD_DB_PORT`, con l'`APP_URL` corrispondente (es. `http://localhost:8080`: le passkey funzionano solo su quell'indirizzo).
+3. Nella cartella del progetto lancia:
 
     ```bash
     ./install.sh
     ```
 
-    Lo script installa le dipendenze Composer con un container Docker temporaneo, crea `.env` da `.env.example`, avvia i container (app + Postgres), genera la chiave, esegue le migrazioni, installa e compila il frontend. Si può rilanciare: salta i passaggi già fatti.
+    La prima volta Docker scarica e costruisce le immagini: qualche minuto. Lo script installa le dipendenze Composer con un container Docker temporaneo, crea `.env` da `.env.example`, avvia i container (app + Postgres), genera la chiave, esegue le migrazioni, installa e compila il frontend. Si può rilanciare: salta i passaggi già fatti.
 
-3. Crea il tuo account amministratore:
+4. Crea il tuo account amministratore:
 
     ```bash
     vendor/bin/sail artisan app:create-admin
     ```
 
-    Chiede email, nome e password, e crea un admin con l'email già verificata. Poi apri `http://localhost` e accedi.
+    Chiede email, nome e password, e crea un admin con l'email già verificata. Poi apri l'indirizzo di `APP_URL` (di solito `http://localhost`) e accedi.
 
 Chi si registra dal sito riceve il ruolo `user`. L'email di verifica non parte davvero (`MAIL_MAILER=log`): il link di verifica è nel log, da leggere con `vendor/bin/sail artisan pail` o in `storage/logs/laravel.log`. Per vedere le email in un'interfaccia web si può aggiungere Mailpit con `vendor/bin/sail artisan sail:add mailpit`.
 
-Se le porte 80, 5173 o 5432 sono già occupate da un altro progetto, cambia `APP_PORT`, `VITE_PORT` o `FORWARD_DB_PORT` in `.env` e rilancia `./install.sh`. Cambiando `APP_PORT` aggiorna anche `APP_URL` (es. `http://localhost:8080`): le passkey funzionano solo sull'indirizzo di `APP_URL`.
+Se `install.sh` si ferma perché una porta è occupata, imposta le porte in `.env` come al passo 2 e rilancialo: riprende da dove si era fermato.
 
 ### Da personalizzare in ogni progetto
 

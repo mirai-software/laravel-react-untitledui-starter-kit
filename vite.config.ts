@@ -15,6 +15,9 @@ export default defineConfig({
             fonts: [
                 bunny('Inter', {
                     weights: [400, 500, 600, 700],
+                    // Metric-matched fallbacks need the optional `fontaine` package, which the kit
+                    // doesn't install: say so, instead of a warning on every build.
+                    optimizedFallbacks: false,
                 }),
             ],
         }),
