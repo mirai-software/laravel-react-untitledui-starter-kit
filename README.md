@@ -83,7 +83,7 @@ Se la versione non viene trovata (per esempio perché il progetto è stato creat
 
 - **Gli admin si creano solo da terminale**, con `php artisan app:create-admin`, in locale come in produzione. Con l'email di un utente che esiste già, il comando lo rende admin dopo una conferma, riattivandolo se era disattivato: serve anche a recuperare l'accesso se l'ultimo admin è stato disattivato.
 - **Chi si registra** dal sito riceve il ruolo `user` e deve verificare l'email.
-- **Ruoli e permessi** li crea `RolePermissionSeeder` (`database/seeders`), chiamato da `DatabaseSeeder`. Si può rilanciare, perché aggiunge solo ciò che manca, e non crea utenti, quindi va bene anche in produzione. I permessi nuovi di un progetto vanno in `RolePermissionSeeder::PERMISSIONS`; in locale, dopo averli aggiunti, `vendor/bin/sail artisan db:seed`. Come aggiungere una sezione con i suoi permessi è spiegato in [`AGENTS.md`](AGENTS.md).
+- **Ruoli e permessi** li creano le migrazioni, quindi esistono in ogni ambiente dopo `migrate`, produzione compresa. Quelli del kit stanno in `create_default_roles_and_permissions` (`database/migrations`); i permessi nuovi di un progetto si aggiungono con una nuova migrazione, scritta a mano. Come aggiungere una sezione con i suoi permessi è spiegato in [`AGENTS.md`](AGENTS.md).
 - **Regole che valgono per tutti:** solo un admin assegna i ruoli; nessuno gestisce un account con più permessi dei suoi; un admin non può togliersi il ruolo admin; l'ultimo admin non può eliminare il proprio account.
 - **Disattivare un utente** (o usare "Elimina account" nelle impostazioni) non cancella i dati: l'account si può riattivare.
 
@@ -117,7 +117,7 @@ Cosa serve al kit in produzione, oltre al deploy abituale di Laravel (dipendenze
 
 - **PHP:** solo versioni con le correzioni di sicurezza, oggi `~8.4.27 || ^8.5.12` (vedi [PHP](#php)). Su una versione vulnerabile `composer install` si rifiuta di installare.
 - **`.env`:** `APP_ENV=production`, `APP_DEBUG=false` (così compaiono le pagine di errore in italiano), `APP_URL` con `https://` (lo usano i link delle email e le passkey; in produzione HTTPS è forzato), e un mailer vero (`MAIL_*`) per la verifica dell'email e il reset della password.
-- **A ogni deploy:** `php artisan migrate --seed --force`, così anche i permessi aggiunti nel frattempo arrivano sul server.
+- **A ogni deploy:** `php artisan migrate --force`, come fa già lo script di deploy di Forge: crea anche i permessi aggiunti nel frattempo.
 - **La prima volta:** `php artisan app:create-admin` per il primo admin.
 
 ## Aggiornamenti

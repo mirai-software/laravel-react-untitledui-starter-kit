@@ -6,7 +6,6 @@ use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use App\Models\Role;
 use App\Models\User;
-use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
@@ -32,9 +31,6 @@ class CreateAdmin extends Command
      */
     public function handle(): int
     {
-        // The admin role and the permissions must exist, even on a deploy that forgot `--seed`.
-        $this->callSilently('db:seed', ['--class' => RolePermissionSeeder::class, '--force' => true]);
-
         $email = $this->stringOption('email') ?? text(label: 'Email', required: true);
 
         $existing = User::withTrashed()->where('email', $email)->first();

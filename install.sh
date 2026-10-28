@@ -55,8 +55,8 @@ if ! grep -q '^APP_KEY=base64:' .env; then
     vendor/bin/sail artisan key:generate
 fi
 
-echo "==> Eseguo le migrazioni e creo ruoli e permessi..."
-vendor/bin/sail artisan migrate --seed --no-interaction
+echo "==> Eseguo le migrazioni (creano anche ruoli e permessi)..."
+vendor/bin/sail artisan migrate --no-interaction
 
 echo "==> Installo e compilo il frontend..."
 vendor/bin/sail npm install
