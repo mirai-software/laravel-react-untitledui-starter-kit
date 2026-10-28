@@ -23,13 +23,14 @@ use Spatie\RouteAttributes\Attributes\WithTrashed;
 class UserController extends Controller
 {
     /**
-     * Show the users list, deactivated users included.
+     * Show the users list, deactivated users included, with what the current user can do on each row.
      */
     #[Get('users', name: 'users.index')]
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', User::class);
 
+        /** @var User $currentUser */
         $currentUser = $request->user();
 
         $users = User::query()
@@ -42,8 +43,13 @@ class UserController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'roles' => $user->roles->pluck('name'),
-                'is_active' => $user->deleted_at === null,
-                'is_current_user' => $currentUser?->is($user) ?? false,
+                'is_active' => ! $user->trashed(),
+                'is_current_user' => $currentUser->is($user),
+                'can' => [
+                    'update' => ! $user->trashed() && $currentUser->can('update', $user),
+                    'delete' => ! $user->trashed() && $currentUser->isNot($user) && $currentUser->can('delete', $user),
+                    'restore' => $user->trashed() && $currentUser->can('restore', $user),
+                ],
             ]);
 
         return Inertia::render('users/index', [
@@ -55,12 +61,12 @@ class UserController extends Controller
      * Show the form to create a user.
      */
     #[Get('users/create', name: 'users.create')]
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $this->authorize('create', User::class);
 
         return Inertia::render('users/create', [
-            'roles' => $this->roleNames(),
+            'roles' => $this->assignableRoles($request),
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]);
     }
@@ -88,9 +94,11 @@ class UserController extends Controller
      * Show the form to edit a user.
      */
     #[Get('users/{user}/edit', name: 'users.edit')]
-    public function edit(User $user): Response
+    public function edit(Request $request, User $user): Response
     {
         $this->authorize('update', $user);
+
+        $isEditingThemselves = $request->user()?->is($user) ?? false;
 
         return Inertia::render('users/edit', [
             'user' => [
@@ -99,7 +107,9 @@ class UserController extends Controller
                 'email' => $user->email,
                 'roles' => $user->roles->pluck('name'),
             ],
-            'roles' => $this->roleNames(),
+            'roles' => $this->assignableRoles($request),
+            // An admin can't remove the admin role from themselves (UpdateUserRequest).
+            'lockedRoles' => $isEditingThemselves && $user->hasRole(Role::ADMIN) ? [Role::ADMIN] : [],
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]);
     }
@@ -166,12 +176,15 @@ class UserController extends Controller
     }
 
     /**
-     * The role names that can be assigned in the user form.
+     * The role names the current user can assign in the user form: only an admin can assign the admin role.
      *
      * @return Collection<int, string>
      */
-    private function roleNames(): Collection
+    private function assignableRoles(Request $request): Collection
     {
-        return Role::query()->orderBy('name')->pluck('name');
+        return Role::query()
+            ->when(! $request->user()?->hasRole(Role::ADMIN), fn ($query) => $query->where('name', '!=', Role::ADMIN))
+            ->orderBy('name')
+            ->pluck('name');
     }
 }

@@ -29,14 +29,27 @@ class RoleManagementTest extends TestCase
 
     public function test_users_with_the_view_permission_see_the_roles_list()
     {
-        Role::findOrCreate('admin');
+        Role::findOrCreate(Role::ADMIN);
 
         $response = $this->actingAs($this->userWith(['roles.view']))->get(route('roles.index'));
 
         $response->assertOk()->assertInertia(fn (AssertableInertia $page) => $page
             ->component('roles/index')
-            ->where('roles.0.name', 'admin')
-            ->where('roles.0.is_protected', true));
+            ->where('roles.0.name', Role::ADMIN)
+            ->where('roles.0.is_protected', true)
+            ->where('roles.0.has_all_permissions', true)
+            ->where('roles.0.can', ['update' => false, 'delete' => false]));
+    }
+
+    public function test_the_admin_role_cannot_be_edited()
+    {
+        $role = Role::findOrCreate(Role::ADMIN);
+
+        $this->actingAs($this->admin())->get(route('roles.edit', $role))->assertForbidden();
+        $this->actingAs($this->admin())->put(route('roles.update', $role), [
+            'name' => Role::ADMIN,
+            'permissions' => ['roles.view'],
+        ])->assertForbidden();
     }
 
     public function test_admins_pass_every_permission_check()
@@ -100,7 +113,7 @@ class RoleManagementTest extends TestCase
 
     public function test_protected_roles_keep_their_name()
     {
-        $role = Role::findOrCreate('admin');
+        $role = Role::findOrCreate(Role::USER);
 
         $response = $this->actingAs($this->userWith(['roles.update']))->put(route('roles.update', $role), [
             'name' => 'superuser',
@@ -108,7 +121,7 @@ class RoleManagementTest extends TestCase
         ]);
 
         $response->assertRedirect(route('roles.index'));
-        $this->assertSame('admin', $role->fresh()?->name);
+        $this->assertSame(Role::USER, $role->fresh()?->name);
     }
 
     public function test_roles_can_be_deleted()
@@ -123,12 +136,25 @@ class RoleManagementTest extends TestCase
 
     public function test_protected_roles_cannot_be_deleted()
     {
-        $role = Role::findOrCreate('admin');
+        foreach (Role::PROTECTED as $name) {
+            $role = Role::findOrCreate($name);
 
-        $response = $this->actingAs($this->admin())->delete(route('roles.destroy', $role));
+            $response = $this->actingAs($this->admin())->delete(route('roles.destroy', $role));
 
-        $response->assertForbidden();
-        $this->assertDatabaseHas('roles', ['id' => $role->id]);
+            $response->assertForbidden();
+            $this->assertDatabaseHas('roles', ['id' => $role->id]);
+        }
+    }
+
+    public function test_users_without_the_update_or_delete_permission_cannot_change_roles()
+    {
+        $role = Role::findOrCreate('editor');
+        $viewer = $this->userWith(['roles.view']);
+
+        $this->actingAs($viewer)->put(route('roles.update', $role), ['name' => 'redattore'])->assertForbidden();
+        $this->actingAs($viewer)->delete(route('roles.destroy', $role))->assertForbidden();
+
+        $this->assertSame('editor', $role->fresh()?->name);
     }
 
     /**
@@ -147,6 +173,6 @@ class RoleManagementTest extends TestCase
 
     private function admin(): User
     {
-        return User::factory()->create()->assignRole(Role::findOrCreate('admin'));
+        return User::factory()->create()->assignRole(Role::findOrCreate(Role::ADMIN));
     }
 }

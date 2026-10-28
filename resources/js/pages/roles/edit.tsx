@@ -5,6 +5,7 @@ import type {
     RoleFormRole,
 } from '@/components/roles/role-form';
 import { RoleForm } from '@/components/roles/role-form';
+import { roleLabel } from '@/lib/roles';
 import { dashboard } from '@/routes';
 import { index } from '@/routes/roles';
 
@@ -15,11 +16,11 @@ type EditRoleProps = {
 
 const EditRole = ({ role, permissionGroups }: EditRoleProps) => (
     <>
-        <Head title={`Modifica ${role.name}`} />
+        <Head title={`Modifica ${roleLabel(role.name)}`} />
 
         <div className="flex max-w-4xl flex-col gap-8 p-4 md:p-6">
             <PageHeader
-                title={`Modifica il ruolo "${role.name}"`}
+                title={`Modifica il ruolo "${roleLabel(role.name)}"`}
                 description="Aggiorna il nome e i permessi del ruolo."
             />
             <RoleForm role={role} permissionGroups={permissionGroups} />

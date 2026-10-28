@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Role;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
@@ -37,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureAuthorization(): void
     {
-        Gate::before(fn (User $user): ?bool => $user->hasRole('admin') ? true : null);
+        Gate::before(fn (User $user): ?bool => $user->hasRole(Role::ADMIN) ? true : null);
     }
 
     /**

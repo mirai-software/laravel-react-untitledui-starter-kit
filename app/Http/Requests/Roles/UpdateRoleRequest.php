@@ -16,7 +16,8 @@ class UpdateRoleRequest extends FormRequest
     {
         $role = $this->route('role');
 
-        return $role instanceof Role && ($this->user()?->can('update', $role) ?? false);
+        // The admin role always has every permission, so nobody edits it, admins included.
+        return $role instanceof Role && ! $role->isAdmin() && ($this->user()?->can('update', $role) ?? false);
     }
 
     /**

@@ -8,10 +8,16 @@ import { index } from '@/routes/users';
 type EditUserProps = {
     user: UserFormUser;
     roles: string[];
+    lockedRoles: string[];
     passwordRules: string;
 };
 
-const EditUser = ({ user, roles, passwordRules }: EditUserProps) => (
+const EditUser = ({
+    user,
+    roles,
+    lockedRoles,
+    passwordRules,
+}: EditUserProps) => (
     <>
         <Head title={`Modifica ${user.name}`} />
 
@@ -20,7 +26,12 @@ const EditUser = ({ user, roles, passwordRules }: EditUserProps) => (
                 title={`Modifica ${user.name}`}
                 description="Aggiorna i dati e i ruoli dell'utente."
             />
-            <UserForm user={user} roles={roles} passwordRules={passwordRules} />
+            <UserForm
+                user={user}
+                roles={roles}
+                lockedRoles={lockedRoles}
+                passwordRules={passwordRules}
+            />
         </div>
     </>
 );

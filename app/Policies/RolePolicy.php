@@ -16,14 +16,6 @@ class RolePolicy
     }
 
     /**
-     * Determine whether the user can view the role.
-     */
-    public function view(User $user, Role $role): bool
-    {
-        return $user->can('roles.view');
-    }
-
-    /**
      * Determine whether the user can create roles.
      */
     public function create(User $user): bool

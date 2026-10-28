@@ -17,7 +17,11 @@ type ConfirmModalProps = {
     onConfirm: () => void;
 };
 
-/** Confirmation dialog for actions started from a list, e.g. deactivating a user. */
+/**
+ * Confirmation dialog for actions started from a list, e.g. deactivating a user.
+ * It can't be dismissed while the action runs. Keep the title's subject set until the
+ * dialog has closed, or the closing animation shows an empty name.
+ */
 const ConfirmModal = ({
     isOpen,
     onOpenChange,
@@ -32,9 +36,10 @@ const ConfirmModal = ({
         isOpen={isOpen}
         onOpenChange={onOpenChange}
         isDismissable={!isProcessing}
+        isKeyboardDismissDisabled={isProcessing}
     >
         <Modal className="max-w-md">
-            <Dialog>
+            <Dialog role={isDestructive ? 'alertdialog' : 'dialog'}>
                 <div className="flex flex-col gap-6 p-6">
                     <div className="flex flex-col gap-1">
                         <AriaHeading

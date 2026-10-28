@@ -8,6 +8,7 @@ import { ConfirmModal } from '@/components/confirm-modal';
 import { PageHeader } from '@/components/page-header';
 import { useInitials } from '@/hooks/use-initials';
 import { usePermissions } from '@/hooks/use-permissions';
+import { roleLabel } from '@/lib/roles';
 import { dashboard } from '@/routes';
 import { create, destroy, edit, index, restore } from '@/routes/users';
 
@@ -18,6 +19,12 @@ type UserRow = {
     roles: string[];
     is_active: boolean;
     is_current_user: boolean;
+    /** What the current user can do on this row (computed by the server's policies). */
+    can: {
+        update: boolean;
+        delete: boolean;
+        restore: boolean;
+    };
 };
 
 type UsersIndexProps = {
@@ -27,10 +34,18 @@ type UsersIndexProps = {
 const UsersIndex = ({ users }: UsersIndexProps) => {
     const { can } = usePermissions();
     const getInitials = useInitials();
+    // The selected user stays set while the dialog closes, so its title doesn't go blank.
     const [userToDeactivate, setUserToDeactivate] = useState<UserRow | null>(
         null,
     );
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [isDeactivating, setIsDeactivating] = useState(false);
+    const [restoringUserId, setRestoringUserId] = useState<number | null>(null);
+
+    const askToDeactivate = (user: UserRow): void => {
+        setUserToDeactivate(user);
+        setIsConfirmOpen(true);
+    };
 
     const deactivateUser = (): void => {
         if (userToDeactivate === null) {
@@ -42,13 +57,21 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
             onStart: () => setIsDeactivating(true),
             onFinish: () => {
                 setIsDeactivating(false);
-                setUserToDeactivate(null);
+                setIsConfirmOpen(false);
             },
         });
     };
 
     const restoreUser = (user: UserRow): void => {
-        router.put(restore(user.id).url, {}, { preserveScroll: true });
+        router.put(
+            restore(user.id).url,
+            {},
+            {
+                preserveScroll: true,
+                onStart: () => setRestoringUserId(user.id),
+                onFinish: () => setRestoringUserId(null),
+            },
+        );
     };
 
     return (
@@ -71,7 +94,7 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
                 <div className="relative overflow-x-auto rounded-xl bg-primary shadow-xs ring-1 ring-secondary ring-inset">
                     <table className="w-full text-left text-sm">
                         <thead>
-                            <tr className="border-b border-secondary bg-secondary text-xs font-semibold text-quaternary">
+                            <tr className="border-b border-secondary bg-secondary text-xs text-quaternary *:font-semibold">
                                 <th className="px-6 py-3">Utente</th>
                                 <th className="px-6 py-3">Ruoli</th>
                                 <th className="px-6 py-3">Stato</th>
@@ -113,7 +136,7 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
                                                         color="brand"
                                                         size="sm"
                                                     >
-                                                        {role}
+                                                        {roleLabel(role)}
                                                     </Badge>
                                                 ))
                                             ) : (
@@ -139,50 +162,50 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center justify-end gap-1">
-                                            {user.is_active &&
-                                                can('users.update') && (
-                                                    <Button
-                                                        color="tertiary"
-                                                        size="sm"
-                                                        href={edit(user.id).url}
-                                                        iconLeading={Edit01}
-                                                    >
-                                                        Modifica
-                                                    </Button>
-                                                )}
-                                            {user.is_active &&
-                                                !user.is_current_user &&
-                                                can('users.delete') && (
-                                                    <Button
-                                                        color="tertiary-destructive"
-                                                        size="sm"
-                                                        iconLeading={
-                                                            SlashCircle01
-                                                        }
-                                                        onPress={() =>
-                                                            setUserToDeactivate(
-                                                                user,
-                                                            )
-                                                        }
-                                                    >
-                                                        Disattiva
-                                                    </Button>
-                                                )}
-                                            {!user.is_active &&
-                                                can('users.delete') && (
-                                                    <Button
-                                                        color="tertiary"
-                                                        size="sm"
-                                                        iconLeading={
-                                                            RefreshCcw01
-                                                        }
-                                                        onPress={() =>
-                                                            restoreUser(user)
-                                                        }
-                                                    >
-                                                        Riattiva
-                                                    </Button>
-                                                )}
+                                            {user.can.update && (
+                                                <Button
+                                                    color="tertiary"
+                                                    size="sm"
+                                                    href={edit(user.id).url}
+                                                    iconLeading={Edit01}
+                                                    aria-label={`Modifica ${user.name}`}
+                                                >
+                                                    Modifica
+                                                </Button>
+                                            )}
+                                            {user.can.delete && (
+                                                <Button
+                                                    color="tertiary-destructive"
+                                                    size="sm"
+                                                    iconLeading={SlashCircle01}
+                                                    aria-label={`Disattiva ${user.name}`}
+                                                    onPress={() =>
+                                                        askToDeactivate(user)
+                                                    }
+                                                >
+                                                    Disattiva
+                                                </Button>
+                                            )}
+                                            {user.can.restore && (
+                                                <Button
+                                                    color="tertiary"
+                                                    size="sm"
+                                                    iconLeading={RefreshCcw01}
+                                                    aria-label={`Riattiva ${user.name}`}
+                                                    isDisabled={
+                                                        restoringUserId !== null
+                                                    }
+                                                    isLoading={
+                                                        restoringUserId ===
+                                                        user.id
+                                                    }
+                                                    onPress={() =>
+                                                        restoreUser(user)
+                                                    }
+                                                >
+                                                    Riattiva
+                                                </Button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -193,12 +216,8 @@ const UsersIndex = ({ users }: UsersIndexProps) => {
             </div>
 
             <ConfirmModal
-                isOpen={userToDeactivate !== null}
-                onOpenChange={(isOpen) => {
-                    if (!isOpen) {
-                        setUserToDeactivate(null);
-                    }
-                }}
+                isOpen={isConfirmOpen}
+                onOpenChange={setIsConfirmOpen}
                 title={`Disattivare ${userToDeactivate?.name ?? ''}?`}
                 description="L'utente non potrà più accedere finché non verrà riattivato. I suoi dati restano conservati."
                 confirmLabel="Disattiva utente"

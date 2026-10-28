@@ -39,18 +39,86 @@ class UserManagementTest extends TestCase
             )));
     }
 
+    public function test_non_admins_cannot_manage_admins()
+    {
+        $admin = $this->admin();
+        $actor = $this->userWith('users.view');
+        foreach (['users.update', 'users.delete'] as $permission) {
+            $actor->givePermissionTo(Permission::findOrCreate($permission));
+        }
+
+        $this->actingAs($actor)->get(route('users.index'))->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('users', fn ($users) => collect($users)->contains(
+                fn (array $user) => $user['id'] === $admin->id && $user['can'] === ['update' => false, 'delete' => false, 'restore' => false],
+            )));
+        $this->actingAs($actor)->get(route('users.edit', $admin))->assertForbidden();
+        $this->actingAs($actor)->put(route('users.update', $admin), [
+            'name' => $admin->name,
+            'email' => 'presa@example.com',
+            'roles' => [],
+        ])->assertForbidden();
+        $this->actingAs($actor)->delete(route('users.destroy', $admin))->assertForbidden();
+
+        $admin->delete();
+        $this->actingAs($actor)->put(route('users.restore', $admin))->assertForbidden();
+
+        $this->assertSame($admin->email, $admin->fresh()?->email);
+    }
+
     public function test_users_can_be_created_with_roles()
     {
-        Role::findOrCreate('admin');
+        Role::findOrCreate('editor');
 
         $response = $this->actingAs($this->userWith('users.create'))
-            ->post(route('users.store'), $this->validPayload(['roles' => ['admin']]));
+            ->post(route('users.store'), $this->validPayload(['roles' => ['editor']]));
 
         $response->assertRedirect(route('users.index'));
         $created = User::where('email', 'nuovo@example.com')->firstOrFail();
         $this->assertSame('Nuovo Utente', $created->name);
-        $this->assertTrue($created->hasRole('admin'));
+        $this->assertTrue($created->hasRole('editor'));
         $this->assertTrue(Hash::check('secret-password', $created->password));
+    }
+
+    public function test_only_admins_can_assign_the_admin_role()
+    {
+        $actor = $this->userWith('users.create');
+        $actor->givePermissionTo(Permission::findOrCreate('users.update'));
+
+        $this->actingAs($actor)->get(route('users.create'))->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('roles', fn ($roles) => ! collect($roles)->contains(Role::ADMIN)));
+        $this->actingAs($actor)
+            ->post(route('users.store'), $this->validPayload(['roles' => [Role::ADMIN]]))
+            ->assertSessionHasErrors('roles.0');
+        $this->actingAs($actor)->put(route('users.update', $actor), [
+            'name' => $actor->name,
+            'email' => $actor->email,
+            'roles' => [Role::ADMIN],
+        ])->assertSessionHasErrors('roles.0');
+
+        $this->assertDatabaseMissing('users', ['email' => 'nuovo@example.com']);
+        $this->assertFalse($actor->fresh()?->hasRole(Role::ADMIN));
+
+        $this->actingAs($this->admin())
+            ->post(route('users.store'), $this->validPayload(['roles' => [Role::ADMIN]]))
+            ->assertRedirect(route('users.index'));
+        $this->assertTrue(User::where('email', 'nuovo@example.com')->firstOrFail()->hasRole(Role::ADMIN));
+    }
+
+    public function test_admins_cannot_remove_the_admin_role_from_themselves()
+    {
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->get(route('users.edit', $admin))->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('lockedRoles', [Role::ADMIN]));
+
+        $response = $this->actingAs($admin)->put(route('users.update', $admin), [
+            'name' => $admin->name,
+            'email' => $admin->email,
+            'roles' => [],
+        ]);
+
+        $response->assertSessionHasErrors('roles');
+        $this->assertTrue($admin->fresh()?->hasRole(Role::ADMIN));
     }
 
     public function test_users_without_the_create_permission_cannot_create_users()
@@ -74,8 +142,8 @@ class UserManagementTest extends TestCase
 
     public function test_users_can_be_updated_keeping_their_password()
     {
-        Role::findOrCreate('admin');
-        $target = User::factory()->create()->assignRole(Role::findOrCreate('user'));
+        Role::findOrCreate('editor');
+        $target = User::factory()->create()->assignRole(Role::findOrCreate(Role::USER));
         $originalPassword = $target->password;
 
         $response = $this->actingAs($this->userWith('users.update'))->put(route('users.update', $target), [
@@ -83,7 +151,7 @@ class UserManagementTest extends TestCase
             'email' => $target->email,
             'password' => '',
             'password_confirmation' => '',
-            'roles' => ['admin'],
+            'roles' => ['editor'],
         ]);
 
         $response->assertRedirect(route('users.index'));
@@ -91,7 +159,7 @@ class UserManagementTest extends TestCase
         $this->assertSame('Nome Aggiornato', $target->name);
         $this->assertSame($originalPassword, $target->password);
         $this->assertNotNull($target->email_verified_at);
-        $this->assertEqualsCanonicalizing(['admin'], $target->getRoleNames()->all());
+        $this->assertEqualsCanonicalizing(['editor'], $target->getRoleNames()->all());
     }
 
     public function test_changing_a_users_email_requires_verifying_it_again()
@@ -146,7 +214,7 @@ class UserManagementTest extends TestCase
 
     public function test_admins_cannot_deactivate_themselves_either()
     {
-        $admin = User::factory()->create()->assignRole(Role::findOrCreate('admin'));
+        $admin = $this->admin();
 
         $response = $this->actingAs($admin)->delete(route('users.destroy', $admin));
 
@@ -175,14 +243,26 @@ class UserManagementTest extends TestCase
         $this->assertGuest();
     }
 
-    public function test_deleting_your_own_account_only_deactivates_it()
+    public function test_the_last_admin_cannot_delete_their_account()
     {
-        $user = User::factory()->create();
+        $admin = $this->admin();
 
-        $response = $this->actingAs($user)->delete(route('profile.destroy'), ['password' => 'password']);
+        $response = $this->actingAs($admin)->delete(route('profile.destroy'), ['password' => 'password']);
+
+        $response->assertSessionHasErrors('password');
+        $this->assertNotSoftDeleted($admin);
+        $this->assertAuthenticatedAs($admin);
+    }
+
+    public function test_an_admin_can_delete_their_account_when_another_admin_remains()
+    {
+        $admin = $this->admin();
+        $this->admin();
+
+        $response = $this->actingAs($admin)->delete(route('profile.destroy'), ['password' => 'password']);
 
         $response->assertRedirect('/');
-        $this->assertSoftDeleted($user);
+        $this->assertSoftDeleted($admin);
     }
 
     public function test_shared_permissions_follow_the_users_abilities()
@@ -199,7 +279,7 @@ class UserManagementTest extends TestCase
         foreach (['roles.view', 'users.create', 'users.view'] as $permission) {
             Permission::findOrCreate($permission);
         }
-        $admin = User::factory()->create()->assignRole(Role::findOrCreate('admin'));
+        $admin = $this->admin();
 
         $response = $this->actingAs($admin)->get(route('dashboard'));
 
@@ -226,5 +306,10 @@ class UserManagementTest extends TestCase
     private function userWith(string $permission): User
     {
         return User::factory()->create()->givePermissionTo(Permission::findOrCreate($permission));
+    }
+
+    private function admin(): User
+    {
+        return User::factory()->create()->assignRole(Role::findOrCreate(Role::ADMIN));
     }
 }

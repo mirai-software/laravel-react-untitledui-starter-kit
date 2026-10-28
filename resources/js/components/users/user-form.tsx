@@ -3,7 +3,9 @@ import type { FormEvent } from 'react';
 import { Button } from '@/components/base/buttons/button';
 import { Checkbox } from '@/components/base/checkbox/checkbox';
 import { Input } from '@/components/base/input/input';
+import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
+import { roleLabel } from '@/lib/roles';
 import { index, store, update } from '@/routes/users';
 
 export type UserFormUser = {
@@ -14,7 +16,10 @@ export type UserFormUser = {
 };
 
 type UserFormProps = {
+    /** The roles the current user can assign. */
     roles: string[];
+    /** Roles that stay assigned and can't be unticked (an admin editing themselves). */
+    lockedRoles?: string[];
     passwordRules: string;
     user?: UserFormUser;
 };
@@ -27,7 +32,12 @@ type UserFormValues = {
     roles: string[];
 };
 
-const UserForm = ({ roles, passwordRules, user }: UserFormProps) => {
+const UserForm = ({
+    roles,
+    lockedRoles = [],
+    passwordRules,
+    user,
+}: UserFormProps) => {
     const form = useForm<UserFormValues>({
         name: user?.name ?? '',
         email: user?.email ?? '',
@@ -61,6 +71,13 @@ const UserForm = ({ roles, passwordRules, user }: UserFormProps) => {
 
         form.post(store().url, options);
     };
+
+    // Errors on single items (`roles.0`) show with the list, like errors on the list itself.
+    const rolesError =
+        form.errors.roles ??
+        Object.entries(form.errors).find(([key]) =>
+            key.startsWith('roles.'),
+        )?.[1];
 
     return (
         <form onSubmit={submit} className="flex flex-col gap-8">
@@ -131,10 +148,16 @@ const UserForm = ({ roles, passwordRules, user }: UserFormProps) => {
                             <Checkbox
                                 key={role}
                                 isSelected={form.data.roles.includes(role)}
+                                isDisabled={lockedRoles.includes(role)}
                                 onChange={(isSelected) =>
                                     toggleRole(role, isSelected)
                                 }
-                                label={role}
+                                label={roleLabel(role)}
+                                hint={
+                                    lockedRoles.includes(role)
+                                        ? 'Non puoi togliere questo ruolo a te stesso.'
+                                        : undefined
+                                }
                             />
                         ))
                     ) : (
@@ -143,6 +166,7 @@ const UserForm = ({ roles, passwordRules, user }: UserFormProps) => {
                         </p>
                     )}
                 </div>
+                <InputError message={rolesError} className="mt-2" />
             </fieldset>
 
             <div className="flex items-center gap-3">

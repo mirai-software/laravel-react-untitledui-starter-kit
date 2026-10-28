@@ -35,7 +35,7 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $input['password'],
         ]);
 
-        $user->assignRole(Role::findOrCreate($isFirstUser ? 'admin' : 'user', 'web'));
+        $user->assignRole(Role::findOrCreate($isFirstUser ? Role::ADMIN : Role::USER, 'web'));
 
         return $user;
     }
