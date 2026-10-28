@@ -219,7 +219,7 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - **Rotte tramite Wayfinder**: importare gli helper da `@/routes/...` (rotte con nome) o `@/actions/...` (controller). Non hardcodare i path; dopo modifiche alle rotte rigenerare con `vendor/bin/sail artisan wayfinder:generate --with-form`.
 - **Permessi lato client** tramite l'hook `usePermissions()` (permessi condivisi da `HandleInertiaRequests` in `auth.permissions`); non rileggere `auth.permissions` a mano.
 - **Form con campi React Aria (Untitled UI)**: per svuotare i campi dopo l'invio usare il `form.reset()` nativo in `onError`/`onSuccess`; `resetOnError`/`resetOnSuccess` di Inertia non li svuotano.
-- **UI in italiano**: le stringhe rivolte all'utente vanno in italiano.
+- **UI in italiano**: le stringhe rivolte all'utente vanno in italiano. I form hanno `noValidate`: la validazione la fa il server, con messaggi in italiano, invece dei popup del browser nella sua lingua.
 
 ## Backend (PHP / Laravel)
 

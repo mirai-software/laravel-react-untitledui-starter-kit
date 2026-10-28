@@ -30,6 +30,7 @@ const Profile = ({ mustVerifyEmail, status }: ProfileProps) => {
                 />
 
                 <Form
+                    noValidate
                     {...ProfileController.update.form()}
                     options={{
                         preserveScroll: true,

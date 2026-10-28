@@ -15,6 +15,7 @@ const Register = ({ passwordRules }: RegisterProps) => (
         <Head title="Registrati" />
 
         <Form
+            noValidate
             {...store.form()}
             resetOnSuccess={['password', 'password_confirmation']}
             disableWhileProcessing

@@ -19,7 +19,7 @@ const ForgotPassword = ({ status }: ForgotPasswordProps) => (
             </p>
         )}
 
-        <Form {...email.form()} className="flex flex-col gap-6">
+        <Form {...email.form()} noValidate className="flex flex-col gap-6">
             {({ processing, errors }) => (
                 <>
                     <Input

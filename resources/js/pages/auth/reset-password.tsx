@@ -15,6 +15,7 @@ const ResetPassword = ({ token, email, passwordRules }: ResetPasswordProps) => (
         <Head title="Reimposta password" />
 
         <Form
+            noValidate
             {...update.form()}
             transform={(data) => ({ ...data, token, email })}
             resetOnSuccess={['password', 'password_confirmation']}

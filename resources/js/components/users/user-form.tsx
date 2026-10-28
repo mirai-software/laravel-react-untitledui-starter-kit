@@ -85,7 +85,7 @@ const UserForm = ({
         )?.[1];
 
     return (
-        <form onSubmit={submit} className="flex flex-col gap-8">
+        <form onSubmit={submit} noValidate className="flex flex-col gap-8">
             <div className="flex max-w-md flex-col gap-5">
                 <Input
                     label="Nome"
