@@ -12,6 +12,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Inertia\ExceptionResponse;
 use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -44,18 +45,38 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Render HTTP errors with the Inertia error page (resources/js/pages/error.tsx).
      *
-     * With debug on, Laravel's detailed error page is kept.
+     * - JSON requests (e.g. the passkey library's calls) keep Laravel's JSON errors.
+     * - An expired page (419) goes back with a toast, so the user doesn't lose the form.
+     * - With debug on, Laravel's detailed error page is kept for the other errors.
      */
     protected function configureErrorPages(): void
     {
-        Inertia::handleExceptionsUsing(function (ExceptionResponse $response): ?ExceptionResponse {
-            if (config('app.debug') || ! in_array($response->statusCode(), [403, 404, 419, 429, 500, 503], true)) {
+        Inertia::handleExceptionsUsing(function (ExceptionResponse $response): ?SymfonyResponse {
+            $request = $response->request;
+
+            if ($request->expectsJson() && ! $request->hasHeader('X-Inertia')) {
                 return null;
             }
 
-            return $response
-                ->render('error', ['status' => $response->statusCode()])
-                ->withSharedData();
+            if ($response->statusCode() === 419) {
+                Inertia::flash('toast', ['type' => 'error', 'message' => __('La pagina è scaduta: riprova.')]);
+
+                return back();
+            }
+
+            if (config('app.debug') || ! in_array($response->statusCode(), [403, 404, 429, 500, 503], true)) {
+                return null;
+            }
+
+            // The page needs the shared data, and so the database: if rendering fails too
+            // (e.g. the database is down), fall back to Laravel's plain error response.
+            return rescue(
+                fn (): SymfonyResponse => $response
+                    ->render('error', ['status' => $response->statusCode()])
+                    ->withSharedData()
+                    ->toResponse($request),
+                $response->response,
+            );
         });
     }
 

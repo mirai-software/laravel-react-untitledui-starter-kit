@@ -20,7 +20,7 @@ Lo starter kit interno del team: la base da cui partono i nostri progetti web. Ã
 - **Gestione utenti**: creazione, modifica, disattivazione (soft delete) e riattivazione. Anche "Elimina account" nelle impostazioni disattiva soltanto.
 - **Il primo utente che si registra diventa `admin`**, i successivi `user`.
 - **Italiano ovunque**: interfaccia, messaggi di validazione e autenticazione, email ([laravel-lang](https://laravel-lang.com)).
-- **Pagine di errore** (403, 404, 419, 429, 500, 503) in stile Untitled UI, in italiano.
+- **Pagine di errore** (403, 404, 429, 500, 503) in stile Untitled UI, in italiano, quando `APP_DEBUG=false`; una pagina scaduta (419) torna indietro con un avviso, senza perdere il form.
 - **Branding Mirai** nella pagina di benvenuto e nelle pagine di accesso.
 - **Setup per Claude Code**: `AGENTS.md` (linee guida Boost + convenzioni del team) con `CLAUDE.md` come link simbolico, skill e server MCP di Boost che girano dentro Sail.
 

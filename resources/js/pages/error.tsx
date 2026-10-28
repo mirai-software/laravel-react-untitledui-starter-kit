@@ -1,8 +1,8 @@
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { ArrowLeft } from '@untitledui/icons';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { Button } from '@/components/base/buttons/button';
-import { home } from '@/routes';
+import { dashboard, home } from '@/routes';
 
 type ErrorPageProps = {
     status: number;
@@ -16,10 +16,6 @@ const messages: Record<number, { title: string; description: string }> = {
     404: {
         title: 'Pagina non trovata',
         description: 'La pagina che cerchi non esiste o è stata spostata.',
-    },
-    419: {
-        title: 'Pagina scaduta',
-        description: 'La sessione è scaduta. Ricarica la pagina e riprova.',
     },
     429: {
         title: 'Troppe richieste',
@@ -39,6 +35,19 @@ const messages: Record<number, { title: string; description: string }> = {
 /** Rendered by `configureErrorPages()` in `AppServiceProvider` when debug is off. */
 const ErrorPage = ({ status }: ErrorPageProps) => {
     const { title, description } = messages[status] ?? messages[500];
+    const { auth } = usePage().props;
+    const homeUrl = auth.user ? dashboard().url : home().url;
+
+    // With no page to go back to (e.g. a link opened in a new tab), go to the home page instead.
+    const goBack = (): void => {
+        if (window.history.length > 1) {
+            window.history.back();
+
+            return;
+        }
+
+        router.visit(homeUrl);
+    };
 
     return (
         <>
@@ -60,12 +69,12 @@ const ErrorPage = ({ status }: ErrorPageProps) => {
                         color="secondary"
                         size="lg"
                         iconLeading={ArrowLeft}
-                        onPress={() => window.history.back()}
+                        onPress={goBack}
                     >
                         Torna indietro
                     </Button>
-                    <Button href={home().url} size="lg">
-                        Vai alla home
+                    <Button href={homeUrl} size="lg">
+                        {auth.user ? 'Vai alla dashboard' : 'Vai alla home'}
                     </Button>
                 </div>
             </main>

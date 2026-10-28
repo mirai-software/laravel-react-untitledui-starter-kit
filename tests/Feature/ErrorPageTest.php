@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Session\TokenMismatchException;
+use Illuminate\Support\Facades\Route;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
@@ -39,6 +41,23 @@ class ErrorPageTest extends TestCase
             ->component('error')
             ->where('status', 404),
         );
+    }
+
+    public function test_json_requests_keep_laravels_json_errors()
+    {
+        $response = $this->actingAs(User::factory()->create())->getJson(route('roles.index'));
+
+        $response->assertForbidden()->assertJsonStructure(['message']);
+    }
+
+    public function test_an_expired_page_goes_back_with_a_toast_instead_of_an_error_page()
+    {
+        Route::middleware('web')->post('/_test/expired', fn () => throw new TokenMismatchException);
+
+        $response = $this->from(route('login'))->post('/_test/expired');
+
+        $response->assertRedirect(route('login'));
+        $response->assertInertiaFlash('toast.type', 'error');
     }
 
     public function test_debug_mode_keeps_laravels_error_page()
