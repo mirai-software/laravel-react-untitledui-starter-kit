@@ -2,46 +2,48 @@
 
 Lo starter kit interno del team: la base da cui partono i nostri progetti web. È lo [starter kit React ufficiale di Laravel](https://github.com/laravel/react-starter-kit) con l'interfaccia rifatta in [Untitled UI](https://www.untitledui.com/react) e le funzionalità che servono in ogni progetto: ruoli e permessi, gestione utenti, interfaccia e messaggi in italiano.
 
+**Indice:** [Stack](#stack) · [Cosa aggiunge](#cosa-aggiunge-allo-starter-kit-ufficiale) · [Nuovo progetto](#nuovo-progetto) · [Utenti, ruoli e permessi](#utenti-ruoli-e-permessi) · [Sviluppo quotidiano](#sviluppo-quotidiano) · [Messa online](#messa-online) · [Aggiornamenti](#aggiornamenti) · [Componenti Untitled UI](#componenti-untitled-ui) · [Traduzioni](#traduzioni) · [Disattivare una funzione di accesso](#disattivare-una-funzione-di-accesso)
+
 ## Stack
 
 |          |                                                                              |
 | -------- | ---------------------------------------------------------------------------- |
 | Backend  | PHP 8.5 (Sail) · Laravel 13 · Fortify · Inertia 3 · Wayfinder                |
 | Frontend | React 19 · TypeScript · Tailwind CSS 4 · Untitled UI v8 (React Aria) · Vite+ |
-| Database | Postgres 18 in sviluppo (Sail); SQLite in memoria per i test                 |
+| Database | Postgres 18 in sviluppo (Sail); SQLite in memoria per test e CI              |
 | Permessi | spatie/laravel-permission 8                                                  |
 | Qualità  | Pint · Larastan · PHPUnit 12 · Vite+ (formattazione e lint) · `tsc`          |
 | AI       | Laravel Boost (via Sail) · `AGENTS.md` con le convenzioni del team           |
 
 ## Cosa aggiunge allo starter kit ufficiale
 
-- **Interfaccia Untitled UI v8** al posto di shadcn/ui, con il tema e i colori del brand Mirai (corallo, `#D97757`), font Inter, tema chiaro/scuro.
-- **Ruoli e permessi** con interfaccia (CRUD ruoli, matrice dei permessi). Il ruolo `admin` supera ogni controllo; la sidebar mostra solo ciò che l'utente può fare.
-- **Gestione utenti**: creazione, modifica, disattivazione (soft delete) e riattivazione. Anche "Elimina account" nelle impostazioni disattiva soltanto. Solo un admin assegna i ruoli, e nessuno può gestire un account con più permessi dei suoi.
+- **Interfaccia Untitled UI v8** al posto di shadcn/ui, con il tema e i colori del brand Mirai (corallo, `#D97757`), font Inter, tema chiaro e scuro.
+- **Ruoli e permessi** con interfaccia: ruoli con la loro matrice dei permessi; il ruolo `admin` supera ogni controllo; la sidebar mostra solo ciò che l'utente può fare.
+- **Gestione utenti**: creazione, modifica, disattivazione e riattivazione. Solo un admin assegna i ruoli, e nessuno gestisce un account con più permessi dei suoi.
 - **Amministratori creati da terminale** con `php artisan app:create-admin`: chi si registra riceve sempre il ruolo `user`.
 - **Italiano ovunque**: interfaccia, messaggi di validazione e autenticazione, email ([laravel-lang](https://laravel-lang.com)).
-- **Pagine di errore** (403, 404, 429, 500, 503) in stile Untitled UI, in italiano, quando `APP_DEBUG=false`; una pagina scaduta (419) torna indietro con un avviso, senza perdere il form.
+- **Pagine di errore** in italiano (403, 404, 429, 500, 503); una pagina scaduta (419) torna indietro con un avviso, senza perdere il form.
 - **Branding Mirai** nella pagina di benvenuto e nelle pagine di accesso.
-- **Impostazioni più rigide** con [nunomaduro/essentials](https://github.com/nunomaduro/essentials) (`config/essentials.php`): modelli Eloquent strict fuori produzione (niente lazy loading né attributi mancanti in silenzio), HTTPS forzato in produzione, nessuna richiesta HTTP vera nei test.
-- **Setup per Claude Code**: `AGENTS.md` (linee guida Boost + convenzioni del team) con `CLAUDE.md` come link simbolico, skill e server MCP di Boost che girano dentro Sail.
+- **Impostazioni più rigide** con [nunomaduro/essentials](https://github.com/nunomaduro/essentials) (`config/essentials.php`): modelli Eloquent strict fuori produzione, HTTPS forzato in produzione, nessuna richiesta HTTP vera nei test.
+- **Setup per Claude Code**: `AGENTS.md` (linee guida di Boost e convenzioni del team) con `CLAUDE.md` come link simbolico, skill e server MCP di Boost che girano dentro Sail.
 
-Tutto ciò che offre lo starter kit ufficiale resta: login, registrazione, reset password, verifica email, 2FA, passkey, conferma password, impostazioni profilo e sicurezza.
+Tutto ciò che offre lo starter kit ufficiale resta: login, registrazione, reset password, verifica email, 2FA, passkey, conferma password, impostazioni di profilo e sicurezza.
 
 ## Nuovo progetto
 
 Serve solo **Docker**: PHP, Composer e Node girano nei container di [Sail](https://laravel.com/docs/sail).
 
-1. Crea il repository del progetto da questo kit ("Use this template" su GitHub) e clonalo. Poi, se vuoi ricevere gli aggiornamenti del kit, collegalo (vedi [Collegare il progetto al kit](#collegare-il-progetto-al-kit)).
-2. Se hai già un altro progetto Sail avviato, le porte 80, 5173 e 5432 sono occupate: prima del passo successivo copia `.env.example` in `.env` e imposta (togliendo il `#`) `APP_PORT`, `VITE_PORT` e `FORWARD_DB_PORT`, con l'`APP_URL` corrispondente (es. `http://localhost:8080`: le passkey funzionano solo su quell'indirizzo).
-3. Nella cartella del progetto lancia:
+1. **Crea il repository** del progetto da questo kit ("Use this template" su GitHub) e clonalo. Se vuoi ricevere gli aggiornamenti del kit, collegalo (vedi [Collegare il progetto al kit](#collegare-il-progetto-al-kit)).
+2. **Se hai già un altro progetto Sail avviato**, le porte 80, 5173 e 5432 sono occupate. Prima del passo successivo copia `.env.example` in `.env` e imposta, togliendo il `#`, `APP_PORT`, `VITE_PORT` e `FORWARD_DB_PORT`, con l'`APP_URL` corrispondente (es. `http://localhost:8080`: le passkey funzionano solo su quell'indirizzo).
+3. **Installa**, nella cartella del progetto:
 
     ```bash
     ./install.sh
     ```
 
-    La prima volta Docker scarica e costruisce le immagini: qualche minuto. Lo script installa le dipendenze Composer con un container Docker temporaneo, crea `.env` da `.env.example`, avvia i container (app + Postgres), genera la chiave, esegue le migrazioni e i seeder (ruoli e permessi), installa e compila il frontend. Si può rilanciare: salta i passaggi già fatti. Composer avvisa che tre pacchetti `dragon-code/*` sono abbandonati: li usa [laravel-lang](https://laravel-lang.com), che serve solo in sviluppo per aggiornare le traduzioni; non hanno vulnerabilità note e non vengono installati in produzione, quindi l'avviso si può ignorare.
+    Lo script installa le dipendenze Composer con un container Docker temporaneo, crea `.env` da `.env.example`, avvia i container (app e Postgres), genera la chiave, esegue migrazioni e seeder (ruoli e permessi), installa e compila il frontend. La prima volta Docker scarica e costruisce le immagini: qualche minuto. Si può rilanciare: salta i passaggi già fatti, e se si è fermato per una porta occupata riprende da lì.
 
-4. Crea il tuo account amministratore:
+4. **Crea il tuo account amministratore:**
 
     ```bash
     vendor/bin/sail artisan app:create-admin
@@ -49,9 +51,10 @@ Serve solo **Docker**: PHP, Composer e Node girano nei container di [Sail](https
 
     Chiede email, nome e password, e crea un admin con l'email già verificata. Poi apri l'indirizzo di `APP_URL` (di solito `http://localhost`) e accedi.
 
-Chi si registra dal sito riceve il ruolo `user`. L'email di verifica non parte davvero (`MAIL_MAILER=log`): il link di verifica è nel log, da leggere con `vendor/bin/sail artisan pail` o in `storage/logs/laravel.log`. Per vedere le email in un'interfaccia web si può aggiungere Mailpit con `vendor/bin/sail artisan sail:add mailpit`.
+**Da sapere:**
 
-Se `install.sh` si ferma perché una porta è occupata, imposta le porte in `.env` come al passo 2 e rilancialo: riprende da dove si era fermato.
+- Le email non partono davvero (`MAIL_MAILER=log`): finiscono nel log, da leggere con `vendor/bin/sail artisan pail` o in `storage/logs/laravel.log`. Per vederle in un'interfaccia web si può aggiungere Mailpit con `vendor/bin/sail artisan sail:add mailpit`.
+- Composer avvisa che tre pacchetti `dragon-code/*` sono abbandonati: li usa [laravel-lang](https://laravel-lang.com), che serve solo in sviluppo per aggiornare le traduzioni. Non hanno vulnerabilità note e non vengono installati in produzione: l'avviso si può ignorare.
 
 ### Collegare il progetto al kit
 
@@ -74,31 +77,15 @@ Se la versione non viene trovata (per esempio perché il progetto è stato creat
 - `composer.json`: `name`, `description` e `license`; `package.json`: `name` (poi `vendor/bin/sail npm install` per aggiornare `package-lock.json`).
 - Questo README: titolo e descrizione del progetto.
 - Il logo (`resources/js/components/app-logo-icon.tsx`) e le favicon in `public/`, che sono ancora quelli di Laravel.
-- I colori del brand in `resources/css/app.css`, se il progetto non usa quelli Mirai; il testo del pannello di accesso in `resources/js/layouts/auth/auth-split-layout.tsx`.
+- I colori del brand in `resources/css/app.css`, se il progetto non usa quelli Mirai, e il testo del pannello di accesso in `resources/js/layouts/auth/auth-split-layout.tsx`.
 
-### Amministratori, ruoli e permessi
+## Utenti, ruoli e permessi
 
-- **Gli admin si creano solo da terminale**, in locale come in produzione (dopo il deploy, `php artisan app:create-admin` sul server). Con l'email di un utente che esiste già, il comando lo rende admin (e lo riattiva se era disattivato), dopo una conferma: serve anche a recuperare l'accesso se l'ultimo admin è stato disattivato.
-- **Ruoli e permessi li crea `RolePermissionSeeder`** (`database/seeders`), chiamato da `DatabaseSeeder`. Si può rilanciare (aggiunge solo ciò che manca) e non crea utenti, quindi va bene anche in produzione: **ogni deploy esegue `php artisan migrate --seed --force`**, così anche i permessi aggiunti dopo arrivano sul server. I permessi nuovi di un progetto vanno in `RolePermissionSeeder::PERMISSIONS`; in locale, dopo averli aggiunti, `vendor/bin/sail artisan db:seed`.
-- Solo un admin assegna i ruoli; un admin non può togliersi il ruolo admin, e l'ultimo admin non può eliminare il proprio account.
-
-### Disattivare una funzione di accesso
-
-Login, registrazione, verifica email, 2FA, passkey e conferma password sono tutte attive. Lo starter kit ufficiale le sceglie all'installazione, cancellando il codice di quelle non volute; qui sono già installate tutte, quindi per toglierne una **non basta toglierla da `config/fortify.php`**: le pagine importano le sue rotte, e senza le rotte il frontend non compila più. Per ogni funzione:
-
-1. Nei file PHP, togli i blocchi tra i commenti `/* @chisel-<funzione> */` e `/* @end-chisel-<funzione> */` (`grep -rn "chisel-registration" app config routes database tests`); le funzioni si chiamano `registration`, `email-verification`, `2fa`, `passkeys`, `password-confirmation`.
-2. Cancella o modifica i file elencati qui sotto (le pagine riscritte in Untitled UI non hanno i commenti).
-3. `vendor/bin/sail artisan wayfinder:generate --with-form`, poi le verifiche di "Sviluppo quotidiano".
-
-| Funzione          | Da cancellare                                                                                                                                                                                                                                                                                                                                         | Da modificare                                                                                                                                                                                                                                                                                                |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Registrazione     | `app/Actions/Fortify/CreateNewUser.php`, `pages/auth/register.tsx`, `tests/Feature/Auth/RegistrationTest.php` e `RegistrationRoleTest.php`                                                                                                                                                                                                            | `pages/auth/login.tsx` (link "Registrati"), `pages/welcome.tsx` (pulsante "Registrati")                                                                                                                                                                                                                      |
-| Verifica email    | `pages/auth/verify-email.tsx`, `tests/Feature/Auth/EmailVerificationTest.php` e `VerificationNotificationTest.php`                                                                                                                                                                                                                                    | `app/Models/User.php` (togli `MustVerifyEmail`), `pages/settings/profile.tsx` (avviso "email non verificata")                                                                                                                                                                                                |
-| 2FA               | `pages/auth/two-factor-challenge.tsx`, `components/manage-two-factor.tsx`, `two-factor-setup-modal.tsx`, `two-factor-recovery-codes.tsx`, `hooks/use-two-factor-auth.ts`, `components/base/input/pin-input.tsx`, la migrazione `add_two_factor_columns_to_users_table`, `tests/Feature/Auth/TwoFactorChallengeTest.php`; il pacchetto npm `input-otp` | `app/Models/User.php` (togli `TwoFactorAuthenticatable`), `pages/settings/security.tsx` (sezione 2FA)                                                                                                                                                                                                        |
-| Passkey           | `components/manage-passkeys.tsx`, `passkey-item.tsx`, `passkey-register.tsx`, `passkey-verify.tsx`, `lib/passkey-errors.ts`, `app/Models/Passkey.php`, la migrazione `create_passkeys_table`; il pacchetto npm `@laravel/passkeys`                                                                                                                    | `app/Models/User.php` (togli `PasskeyAuthenticatable` e `PasskeyUser`), `app/Providers/AppServiceProvider.php` (`configurePasskeys()`), `pages/settings/security.tsx`, `pages/auth/login.tsx` e `confirm-password.tsx` (pulsante passkey), `tests/Feature/Users/UserManagementTest.php` (test sulle passkey) |
-| Conferma password | `pages/auth/confirm-password.tsx`, `tests/Feature/Auth/PasswordConfirmationTest.php`                                                                                                                                                                                                                                                                  | `config/fortify.php` (`'confirmPassword' => false` per 2FA e passkey)                                                                                                                                                                                                                                        |
-
-I percorsi senza cartella sono in `resources/js/`. Se togli sia la 2FA sia le passkey, in `pages/settings/security.tsx` resta solo il cambio password.
+- **Gli admin si creano solo da terminale**, con `php artisan app:create-admin`, in locale come in produzione. Con l'email di un utente che esiste già, il comando lo rende admin dopo una conferma, riattivandolo se era disattivato: serve anche a recuperare l'accesso se l'ultimo admin è stato disattivato.
+- **Chi si registra** dal sito riceve il ruolo `user` e deve verificare l'email.
+- **Ruoli e permessi** li crea `RolePermissionSeeder` (`database/seeders`), chiamato da `DatabaseSeeder`. Si può rilanciare, perché aggiunge solo ciò che manca, e non crea utenti, quindi va bene anche in produzione. I permessi nuovi di un progetto vanno in `RolePermissionSeeder::PERMISSIONS`; in locale, dopo averli aggiunti, `vendor/bin/sail artisan db:seed`. Come aggiungere una sezione con i suoi permessi è spiegato in [`AGENTS.md`](AGENTS.md).
+- **Regole che valgono per tutti:** solo un admin assegna i ruoli; nessuno gestisce un account con più permessi dei suoi; un admin non può togliersi il ruolo admin; l'ultimo admin non può eliminare il proprio account.
+- **Disattivare un utente** (o usare "Elimina account" nelle impostazioni) non cancella i dati: l'account si può riattivare.
 
 ## Sviluppo quotidiano
 
@@ -112,9 +99,7 @@ vendor/bin/sail stop
 
 Tutti i comandi PHP, Artisan, Composer e Node passano da `vendor/bin/sail`.
 
-**Aggiornamenti di sicurezza di PHP.** `composer.json` accetta solo versioni di PHP corrette (oggi `~8.4.27 || ^8.5.12`, le correzioni di php2shell): su un server con una versione vulnerabile `composer install` si rifiuta di installare. Quando esce una nuova correzione di sicurezza, alza questi minimi e aggiorna PHP sui server; in locale `vendor/bin/sail build --no-cache` e `vendor/bin/sail up -d` ricostruiscono il container con l'ultima versione.
-
-Prima di ogni commit (le stesse verifiche che esegue la CI su GitHub, `composer ci:check`):
+Prima di ogni commit, le stesse verifiche che esegue la CI su GitHub (`composer ci:check`):
 
 ```bash
 vendor/bin/sail composer test
@@ -126,9 +111,18 @@ Il primo esegue Pint, PHPStan e i test; il secondo formattazione e lint (Vite+);
 
 Le convenzioni del team (componenti come arrow function, niente `any`, rotte via Wayfinder, permessi, rotte come attributi solo sui nostri controller, ecc.) sono in [`AGENTS.md`](AGENTS.md), che è anche il file letto da Claude Code (tramite `CLAUDE.md`).
 
+## Messa online
+
+Cosa serve al kit in produzione, oltre al deploy abituale di Laravel (dipendenze, `php artisan optimize`, frontend compilato con `npm run build`):
+
+- **PHP:** solo versioni con le correzioni di sicurezza, oggi `~8.4.27 || ^8.5.12` (vedi [PHP](#php)). Su una versione vulnerabile `composer install` si rifiuta di installare.
+- **`.env`:** `APP_ENV=production`, `APP_DEBUG=false` (così compaiono le pagine di errore in italiano), `APP_URL` con `https://` (lo usano i link delle email e le passkey; in produzione HTTPS è forzato), e un mailer vero (`MAIL_*`) per la verifica dell'email e il reset della password.
+- **A ogni deploy:** `php artisan migrate --seed --force`, così anche i permessi aggiunti nel frattempo arrivano sul server.
+- **La prima volta:** `php artisan app:create-admin` per il primo admin.
+
 ## Aggiornamenti
 
-Le dipendenze (Laravel, Inertia, React, Untitled UI…) si aggiornano in ogni progetto con `vendor/bin/sail composer update` e `vendor/bin/sail npm update`. Gli aggiornamenti qui sotto riguardano invece il codice copiato nel progetto: pagine, componenti, ruoli e utenti, configurazione.
+Le dipendenze (Laravel, Inertia, React, Untitled UI…) si aggiornano in ogni progetto con `vendor/bin/sail composer update` e `vendor/bin/sail npm update`. Gli aggiornamenti dal kit riguardano invece il codice copiato nel progetto: pagine, componenti, ruoli e utenti, configurazione.
 
 ### In un progetto: dal kit
 
@@ -158,13 +152,19 @@ Git applica solo le modifiche arrivate dopo l'ultimo collegamento (un merge "-s 
 - upstream non versiona `composer.lock` e `package-lock.json`, noi sì: se il merge cambia `composer.json` o `package.json`, aggiorna i lock (`vendor/bin/sail composer update <pacchetti>`, `vendor/bin/sail npm install`) e committali;
 - i file shadcn nuovi di upstream (`components/ui/*` o pagine che li usano) arrivano senza conflitti ma importano pacchetti che abbiamo tolto: vanno convertiti in Untitled UI o eliminati;
 - i file che abbiamo eliminato (es. `components/ui/*`) danno un conflitto "modificato da upstream, eliminato da noi": si risolve con `git rm`;
-- dopo il merge: tutte le verifiche qui sopra e un giro nel browser.
+- dopo il merge: tutte le verifiche di [Sviluppo quotidiano](#sviluppo-quotidiano) e un giro nel browser.
 
 Per lo stesso motivo conviene restare vicini a upstream: file nuovi invece di modifiche ai file di upstream, stile Pint di default, rotte di upstream nei file `routes/*.php`.
 
+### PHP
+
+`composer.json` accetta solo versioni di PHP con le correzioni di sicurezza (oggi `~8.4.27 || ^8.5.12`, le correzioni di php2shell). Quando esce una nuova correzione di sicurezza, alza questi minimi e aggiorna PHP sui server; in locale `vendor/bin/sail build --no-cache` e poi `vendor/bin/sail up -d` ricostruiscono il container con l'ultima versione.
+
 ## Componenti Untitled UI
 
-I componenti in `resources/js/components/{base,application,foundations}` e `resources/js/utils/` vengono dalla [CLI di Untitled UI](https://www.untitledui.com/react/docs/cli) e restano come consegnati (sono esclusi da formattazione e lint di Vite+): si personalizzano con i token del tema e con componenti nostri che li avvolgono. Il kit contiene solo i componenti usati; per aggiungerne o aggiornarne uno:
+I componenti in `resources/js/components/{base,application,foundations}` e `resources/js/utils/` vengono dalla [CLI di Untitled UI](https://www.untitledui.com/react/docs/cli) e restano come consegnati (sono esclusi da formattazione e lint di Vite+): si personalizzano con i token del tema e con componenti nostri che li avvolgono. Il tema (`resources/css/theme.css`) è quello di Untitled UI senza modifiche; i colori del brand stanno in `resources/css/app.css`. Non usare `untitledui init`: il tema è già configurato.
+
+Il kit contiene solo i componenti usati. Per aggiungerne o aggiornarne uno:
 
 ```bash
 vendor/bin/sail npx -y untitledui@latest add <componente> -t base -p resources/js/components --lib-version 8 --yes
@@ -178,7 +178,7 @@ mkdir -p resources/js/utils && [ -d utils ] && mv utils/* resources/js/utils/ &&
 grep -rl "@/resources/js/" resources/js | xargs sed -i '' 's#@/resources/js/#@/#g'
 ```
 
-La CLI aggiunge anche i file vicini e tutto ciò che importano (per esempio `add input` riporta tutte le varianti di input e decine di icone di pagamento) e può reinstallare pacchetti npm. Dopo `add`, guarda `git status` e `git diff package.json`: tieni solo i file che il nostro codice importa, direttamente o tramite altri file tenuti, e togli il resto; `vendor/bin/sail npm run types:check` e `vendor/bin/sail npm run build` segnalano se hai tolto troppo. Se la CLI aggiunge un hook in `resources/js/hooks/`, aggiungilo anche alle esclusioni di Vite+ in `vite.config.ts`. Non usare `untitledui init`: il tema è già configurato. `resources/css/theme.css` è quello di Untitled UI senza modifiche; i colori del brand stanno in `resources/css/app.css`.
+La CLI aggiunge anche i file vicini e tutto ciò che importano (per esempio `add input` riporta tutte le varianti di input e decine di icone di pagamento) e può reinstallare pacchetti npm. Dopo `add`, guarda `git status` e `git diff package.json`: tieni solo i file che il nostro codice importa, direttamente o tramite altri file tenuti, e togli il resto; `vendor/bin/sail npm run types:check` e `vendor/bin/sail npm run build` segnalano se hai tolto troppo. Se la CLI aggiunge un hook in `resources/js/hooks/`, aggiungilo anche alle esclusioni di Vite+ in `vite.config.ts`.
 
 ## Traduzioni
 
@@ -189,3 +189,38 @@ vendor/bin/sail artisan lang:update
 ```
 
 Le chiavi nostre passate a `__()` vanno aggiunte a `lang/it.json` (`lang:update` le mantiene).
+
+## Disattivare una funzione di accesso
+
+Registrazione, verifica email, 2FA, passkey e conferma password sono tutte attive. Lo starter kit ufficiale le sceglie all'installazione, cancellando il codice di quelle non volute; qui sono già installate tutte, quindi per toglierne una **non basta toglierla da `config/fortify.php`**: le pagine importano le sue rotte, e senza le rotte il frontend non compila più. Per ogni funzione:
+
+1. Nei file PHP, togli i blocchi tra i commenti `/* @chisel-<funzione> */` e `/* @end-chisel-<funzione> */`. Le funzioni si chiamano `registration`, `email-verification`, `2fa`, `passkeys`, `password-confirmation`; per trovarli: `grep -rn "chisel-registration" app config routes database tests`.
+2. Cancella e modifica i file elencati qui sotto (le pagine riscritte in Untitled UI non hanno i commenti). I percorsi senza cartella sono in `resources/js/`.
+3. `vendor/bin/sail artisan wayfinder:generate --with-form`, poi le verifiche di [Sviluppo quotidiano](#sviluppo-quotidiano).
+
+**Registrazione**
+
+- Da cancellare: `app/Actions/Fortify/CreateNewUser.php`, `pages/auth/register.tsx`, `tests/Feature/Auth/RegistrationTest.php` e `RegistrationRoleTest.php`.
+- Da modificare: `pages/auth/login.tsx` (link "Registrati"), `pages/welcome.tsx` (pulsante "Registrati").
+
+**Verifica email**
+
+- Da cancellare: `pages/auth/verify-email.tsx`, `tests/Feature/Auth/EmailVerificationTest.php` e `VerificationNotificationTest.php`.
+- Da modificare: `app/Models/User.php` (togli `MustVerifyEmail`), `pages/settings/profile.tsx` (avviso "email non verificata").
+
+**2FA**
+
+- Da cancellare: `pages/auth/two-factor-challenge.tsx`, `components/manage-two-factor.tsx`, `two-factor-setup-modal.tsx`, `two-factor-recovery-codes.tsx`, `hooks/use-two-factor-auth.ts`, `components/base/input/pin-input.tsx`, la migrazione `add_two_factor_columns_to_users_table`, `tests/Feature/Auth/TwoFactorChallengeTest.php`, e il pacchetto npm `input-otp`.
+- Da modificare: `app/Models/User.php` (togli `TwoFactorAuthenticatable`), `pages/settings/security.tsx` (sezione 2FA).
+
+**Passkey**
+
+- Da cancellare: `components/manage-passkeys.tsx`, `passkey-item.tsx`, `passkey-register.tsx`, `passkey-verify.tsx`, `lib/passkey-errors.ts`, `app/Models/Passkey.php`, la migrazione `create_passkeys_table`, e il pacchetto npm `@laravel/passkeys`.
+- Da modificare: `app/Models/User.php` (togli `PasskeyAuthenticatable` e `PasskeyUser`), `app/Providers/AppServiceProvider.php` (`configurePasskeys()`), `pages/settings/security.tsx`, `pages/auth/login.tsx` e `confirm-password.tsx` (pulsante passkey), `tests/Feature/Users/UserManagementTest.php` (test sulle passkey).
+
+**Conferma password**
+
+- Da cancellare: `pages/auth/confirm-password.tsx`, `tests/Feature/Auth/PasswordConfirmationTest.php`.
+- Da modificare: `config/fortify.php` (`'confirmPassword' => false` per 2FA e passkey).
+
+Se togli sia la 2FA sia le passkey, in `pages/settings/security.tsx` resta solo il cambio password.
