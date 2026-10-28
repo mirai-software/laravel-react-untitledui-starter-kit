@@ -6,8 +6,10 @@ use App\Models\Passkey;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia;
 use Laravel\Passkeys\Passkeys;
 use Tests\TestCase;
@@ -69,6 +71,7 @@ class UserManagementTest extends TestCase
 
     public function test_users_can_be_created_with_roles()
     {
+        Notification::fake();
         Role::findOrCreate('editor');
 
         $response = $this->actingAs($this->userWith('users.create'))
@@ -79,6 +82,7 @@ class UserManagementTest extends TestCase
         $this->assertSame('Nuovo Utente', $created->name);
         $this->assertTrue($created->hasRole('editor'));
         $this->assertTrue(Hash::check('secret-password', $created->password));
+        Notification::assertSentTo($created, VerifyEmail::class);
     }
 
     public function test_only_admins_can_assign_the_admin_role()
@@ -144,6 +148,7 @@ class UserManagementTest extends TestCase
 
     public function test_users_can_be_updated_keeping_their_password()
     {
+        Notification::fake();
         Role::findOrCreate('editor');
         $target = User::factory()->create()->assignRole(Role::findOrCreate(Role::USER));
         $originalPassword = $target->password;
@@ -162,10 +167,12 @@ class UserManagementTest extends TestCase
         $this->assertSame($originalPassword, $target->password);
         $this->assertNotNull($target->email_verified_at);
         $this->assertEqualsCanonicalizing(['editor'], $target->getRoleNames()->all());
+        Notification::assertNothingSent();
     }
 
     public function test_changing_a_users_email_requires_verifying_it_again()
     {
+        Notification::fake();
         $target = User::factory()->create();
 
         $this->actingAs($this->userWith('users.update'))->put(route('users.update', $target), [
@@ -177,6 +184,7 @@ class UserManagementTest extends TestCase
         $target->refresh();
         $this->assertSame('nuova-email@example.com', $target->email);
         $this->assertNull($target->email_verified_at);
+        Notification::assertSentTo($target, VerifyEmail::class);
     }
 
     public function test_the_password_changes_when_filled_in()
@@ -290,6 +298,15 @@ class UserManagementTest extends TestCase
         $response = $this->actingAs($this->userWith('users.view'))->get(route('dashboard'));
 
         $response->assertInertia(fn (AssertableInertia $page) => $page->where('auth.permissions', ['users.view']));
+    }
+
+    public function test_the_shared_user_carries_no_roles_or_permissions()
+    {
+        $response = $this->actingAs($this->userWith('users.view'))->get(route('users.index'));
+
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->missing('auth.user.roles')
+            ->missing('auth.user.permissions'));
     }
 
     public function test_admins_receive_every_permission()

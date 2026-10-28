@@ -72,7 +72,7 @@ class UserController extends Controller
     }
 
     /**
-     * Store a new user with their roles.
+     * Store a new user with their roles, and send them the email verification link.
      */
     #[Post('users', name: 'users.store')]
     public function store(StoreUserRequest $request): RedirectResponse
@@ -84,6 +84,7 @@ class UserController extends Controller
         ]);
 
         $user->syncRoles($request->validated('roles', []));
+        $user->sendEmailVerificationNotification();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Utente creato.')]);
 
@@ -115,7 +116,8 @@ class UserController extends Controller
     }
 
     /**
-     * Update a user. The password only changes when filled in, and a new email has to be verified again.
+     * Update a user. The password only changes when filled in, and a new email has to be verified
+     * again by its owner, who gets the verification link.
      */
     #[Put('users/{user}', name: 'users.update')]
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
@@ -125,7 +127,9 @@ class UserController extends Controller
             'email' => $request->validated('email'),
         ]);
 
-        if ($user->isDirty('email')) {
+        $emailChanged = $user->isDirty('email');
+
+        if ($emailChanged) {
             $user->email_verified_at = null;
         }
 
@@ -135,6 +139,10 @@ class UserController extends Controller
 
         $user->save();
         $user->syncRoles($request->validated('roles', []));
+
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+        }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Utente aggiornato.')]);
 

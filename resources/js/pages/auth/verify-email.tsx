@@ -14,8 +14,8 @@ const VerifyEmail = ({ status }: VerifyEmailProps) => (
 
         {status === 'verification-link-sent' && (
             <p className="text-center text-sm font-medium text-success-primary">
-                Un nuovo link di verifica è stato inviato all'indirizzo email
-                fornito durante la registrazione.
+                Un nuovo link di verifica è stato inviato al tuo indirizzo
+                email.
             </p>
         )}
 
@@ -45,7 +45,7 @@ const VerifyEmail = ({ status }: VerifyEmailProps) => (
 VerifyEmail.layout = {
     title: 'Verifica email',
     description:
-        'Verifica il tuo indirizzo email cliccando sul link che ti abbiamo appena inviato.',
+        'Verifica il tuo indirizzo email cliccando sul link che ti abbiamo inviato.',
 };
 
 export default VerifyEmail;

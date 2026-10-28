@@ -40,8 +40,9 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $request->user(),
-                'permissions' => $this->permissions($request),
+                // Without relations: permission checks load roles and permissions on the user, which the page doesn't need.
+                'user' => $request->user()?->withoutRelations(),
+                'permissions' => fn (): array => $this->permissions($request),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
@@ -49,7 +50,8 @@ class HandleInertiaRequests extends Middleware
 
     /**
      * The current user's effective permissions, used by the frontend to show or hide navigation.
-     * They go through `can()`, so the admin (Gate::before) gets every permission.
+     * They go through `can()`, so the admin (Gate::before) gets every permission. Shared lazily,
+     * so partial reloads that don't ask for `auth` skip the query.
      *
      * @return list<string>
      */
