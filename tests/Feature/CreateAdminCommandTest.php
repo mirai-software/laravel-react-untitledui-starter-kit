@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\Role;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class CreateAdminCommandTest extends TestCase
@@ -24,6 +26,20 @@ class CreateAdminCommandTest extends TestCase
         $this->assertTrue($admin->hasRole(Role::ADMIN));
         $this->assertTrue($admin->hasVerifiedEmail());
         $this->assertTrue(Hash::check('una-password-sicura', $admin->password));
+    }
+
+    public function test_a_new_admin_gets_every_permission_even_if_the_seeder_never_ran()
+    {
+        $this->artisan('app:create-admin', ['--email' => 'capo@example.com', '--name' => 'Capo'])
+            ->expectsQuestion('Password', 'una-password-sicura')
+            ->expectsQuestion('Conferma la password', 'una-password-sicura')
+            ->assertSuccessful();
+
+        $admin = User::where('email', 'capo@example.com')->firstOrFail();
+
+        $this->actingAs($admin)->get(route('dashboard'))->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('auth.permissions', fn ($permissions) => collect($permissions)->sort()->values()->all()
+                === collect(RolePermissionSeeder::PERMISSIONS)->sort()->values()->all()));
     }
 
     public function test_it_asks_for_the_missing_details()

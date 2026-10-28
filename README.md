@@ -39,7 +39,7 @@ Serve solo **Docker**: PHP, Composer e Node girano nei container di [Sail](https
     ./install.sh
     ```
 
-    La prima volta Docker scarica e costruisce le immagini: qualche minuto. Lo script installa le dipendenze Composer con un container Docker temporaneo, crea `.env` da `.env.example`, avvia i container (app + Postgres), genera la chiave, esegue le migrazioni, installa e compila il frontend. Si può rilanciare: salta i passaggi già fatti. Composer avvisa che tre pacchetti `dragon-code/*` sono abbandonati: li usa [laravel-lang](https://laravel-lang.com), che serve solo in sviluppo per aggiornare le traduzioni; non hanno vulnerabilità note e non vengono installati in produzione, quindi l'avviso si può ignorare.
+    La prima volta Docker scarica e costruisce le immagini: qualche minuto. Lo script installa le dipendenze Composer con un container Docker temporaneo, crea `.env` da `.env.example`, avvia i container (app + Postgres), genera la chiave, esegue le migrazioni e i seeder (ruoli e permessi), installa e compila il frontend. Si può rilanciare: salta i passaggi già fatti. Composer avvisa che tre pacchetti `dragon-code/*` sono abbandonati: li usa [laravel-lang](https://laravel-lang.com), che serve solo in sviluppo per aggiornare le traduzioni; non hanno vulnerabilità note e non vengono installati in produzione, quindi l'avviso si può ignorare.
 
 4. Crea il tuo account amministratore:
 
@@ -76,12 +76,11 @@ Se la versione non viene trovata (per esempio perché il progetto è stato creat
 - Il logo (`resources/js/components/app-logo-icon.tsx`) e le favicon in `public/`, che sono ancora quelli di Laravel.
 - I colori del brand in `resources/css/app.css`, se il progetto non usa quelli Mirai; il testo del pannello di accesso in `resources/js/layouts/auth/auth-split-layout.tsx`.
 
-### Amministratori, ruoli e utente di prova
+### Amministratori, ruoli e permessi
 
 - **Gli admin si creano solo da terminale**, in locale come in produzione (dopo il deploy, `php artisan app:create-admin` sul server). Con l'email di un utente che esiste già, il comando lo rende admin (e lo riattiva se era disattivato), dopo una conferma: serve anche a recuperare l'accesso se l'ultimo admin è stato disattivato.
-- Ruoli e permessi li crea una migrazione, quindi esistono in ogni ambiente dopo `migrate`. I permessi nuovi di un progetto si aggiungono con altre migrazioni.
+- **Ruoli e permessi li crea `RolePermissionSeeder`** (`database/seeders`), chiamato da `DatabaseSeeder`. Si può rilanciare (aggiunge solo ciò che manca) e non crea utenti, quindi va bene anche in produzione: **ogni deploy esegue `php artisan migrate --seed --force`**, così anche i permessi aggiunti dopo arrivano sul server. I permessi nuovi di un progetto vanno in `RolePermissionSeeder::PERMISSIONS`; in locale, dopo averli aggiunti, `vendor/bin/sail artisan db:seed`.
 - Solo un admin assegna i ruoli; un admin non può togliersi il ruolo admin, e l'ultimo admin non può eliminare il proprio account.
-- `vendor/bin/sail artisan db:seed` aggiunge un utente di prova admin (`test@example.com`, password `password`). **Solo per lo sviluppo in locale, mai in produzione.**
 
 ### Disattivare una funzione di accesso
 

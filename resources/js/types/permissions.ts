@@ -1,4 +1,4 @@
-/** The kit's permissions (created by the `create_default_roles_and_permissions` migration), named `resource.action`. */
+/** The kit's permissions (created by `RolePermissionSeeder`), named `resource.action`. */
 export type AppPermission =
     | 'roles.view'
     | 'roles.create'

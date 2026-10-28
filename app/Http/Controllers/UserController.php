@@ -89,7 +89,7 @@ class UserController extends Controller
                 'password' => $request->validated('password'),
             ]);
 
-            $user->syncRoles($this->canAssignRoles($request) ? $request->validated('roles') : [Role::USER]);
+            $user->syncRoles($this->canAssignRoles($request) ? $request->validated('roles') : [Role::findOrCreate(Role::USER, 'web')]);
 
             return $user;
         });
