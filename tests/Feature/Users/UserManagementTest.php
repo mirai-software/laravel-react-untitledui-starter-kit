@@ -69,12 +69,42 @@ class UserManagementTest extends TestCase
         $this->assertSame($admin->email, $admin->fresh()?->email);
     }
 
-    public function test_users_can_be_created_with_roles()
+    public function test_non_admins_cannot_manage_users_with_more_permissions()
+    {
+        $actor = $this->userWith('users.view');
+        foreach (['users.update', 'users.delete'] as $permission) {
+            $actor->givePermissionTo(Permission::findOrCreate($permission));
+        }
+        $manager = User::factory()->create()->assignRole(
+            Role::findOrCreate('manager')->givePermissionTo(Permission::findOrCreate('roles.update')),
+        );
+        $peer = $this->userWith('users.view');
+
+        $this->actingAs($actor)->get(route('users.index'))->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('users', fn ($users) => collect($users)->contains(
+                fn (array $user) => $user['id'] === $manager->id && $user['can'] === ['update' => false, 'delete' => false, 'restore' => false],
+            ) && collect($users)->contains(
+                fn (array $user) => $user['id'] === $peer->id && $user['can'] === ['update' => true, 'delete' => true, 'restore' => false],
+            )));
+        $this->actingAs($actor)->get(route('users.edit', $manager))->assertForbidden();
+        $this->actingAs($actor)->put(route('users.update', $manager), [
+            'name' => $manager->name,
+            'email' => $manager->email,
+            'password' => 'presa-password',
+            'password_confirmation' => 'presa-password',
+        ])->assertForbidden();
+        $this->actingAs($actor)->delete(route('users.destroy', $manager))->assertForbidden();
+
+        $this->assertTrue(Hash::check('password', $manager->fresh()?->password ?? ''));
+        $this->assertNotSoftDeleted($manager);
+    }
+
+    public function test_admins_create_users_with_the_roles_they_choose()
     {
         Notification::fake();
         Role::findOrCreate('editor');
 
-        $response = $this->actingAs($this->userWith('users.create'))
+        $response = $this->actingAs($this->admin())
             ->post(route('users.store'), $this->validPayload(['roles' => ['editor']]));
 
         $response->assertRedirect(route('users.index'));
@@ -85,29 +115,56 @@ class UserManagementTest extends TestCase
         Notification::assertSentTo($created, VerifyEmail::class);
     }
 
-    public function test_only_admins_can_assign_the_admin_role()
+    public function test_users_created_by_non_admins_get_the_user_role()
     {
+        $response = $this->actingAs($this->userWith('users.create'))
+            ->post(route('users.store'), $this->validPayload());
+
+        $response->assertRedirect(route('users.index'));
+        $this->assertEqualsCanonicalizing(
+            [Role::USER],
+            User::where('email', 'nuovo@example.com')->firstOrFail()->getRoleNames()->all(),
+        );
+    }
+
+    public function test_only_admins_can_assign_roles()
+    {
+        Role::findOrCreate('editor');
         $actor = $this->userWith('users.create');
         $actor->givePermissionTo(Permission::findOrCreate('users.update'));
 
         $this->actingAs($actor)->get(route('users.create'))->assertInertia(fn (AssertableInertia $page) => $page
-            ->where('roles', fn ($roles) => ! collect($roles)->contains(Role::ADMIN)));
+            ->where('canAssignRoles', false)
+            ->where('roles', []));
         $this->actingAs($actor)
-            ->post(route('users.store'), $this->validPayload(['roles' => [Role::ADMIN]]))
-            ->assertSessionHasErrors('roles.0');
+            ->post(route('users.store'), $this->validPayload(['roles' => ['editor']]))
+            ->assertSessionHasErrors('roles');
         $this->actingAs($actor)->put(route('users.update', $actor), [
             'name' => $actor->name,
             'email' => $actor->email,
-            'roles' => [Role::ADMIN],
-        ])->assertSessionHasErrors('roles.0');
+            'roles' => ['editor'],
+        ])->assertSessionHasErrors('roles');
 
         $this->assertDatabaseMissing('users', ['email' => 'nuovo@example.com']);
-        $this->assertFalse($actor->fresh()?->hasRole(Role::ADMIN));
+        $this->assertFalse($actor->fresh()?->hasRole('editor'));
 
         $this->actingAs($this->admin())
             ->post(route('users.store'), $this->validPayload(['roles' => [Role::ADMIN]]))
             ->assertRedirect(route('users.index'));
         $this->assertTrue(User::where('email', 'nuovo@example.com')->firstOrFail()->hasRole(Role::ADMIN));
+    }
+
+    public function test_admins_must_send_the_roles_when_updating_a_user()
+    {
+        $target = User::factory()->create()->assignRole(Role::findOrCreate(Role::USER));
+
+        $response = $this->actingAs($this->admin())->put(route('users.update', $target), [
+            'name' => $target->name,
+            'email' => $target->email,
+        ]);
+
+        $response->assertSessionHasErrors('roles');
+        $this->assertTrue($target->fresh()?->hasRole(Role::USER));
     }
 
     public function test_admins_cannot_remove_the_admin_role_from_themselves()
@@ -146,10 +203,9 @@ class UserManagementTest extends TestCase
         $response->assertSessionHasErrors('email');
     }
 
-    public function test_users_can_be_updated_keeping_their_password()
+    public function test_users_can_be_updated_keeping_their_password_and_roles()
     {
         Notification::fake();
-        Role::findOrCreate('editor');
         $target = User::factory()->create()->assignRole(Role::findOrCreate(Role::USER));
         $originalPassword = $target->password;
 
@@ -158,7 +214,6 @@ class UserManagementTest extends TestCase
             'email' => $target->email,
             'password' => '',
             'password_confirmation' => '',
-            'roles' => ['editor'],
         ]);
 
         $response->assertRedirect(route('users.index'));
@@ -166,7 +221,7 @@ class UserManagementTest extends TestCase
         $this->assertSame('Nome Aggiornato', $target->name);
         $this->assertSame($originalPassword, $target->password);
         $this->assertNotNull($target->email_verified_at);
-        $this->assertEqualsCanonicalizing(['editor'], $target->getRoleNames()->all());
+        $this->assertEqualsCanonicalizing([Role::USER], $target->getRoleNames()->all());
         Notification::assertNothingSent();
     }
 

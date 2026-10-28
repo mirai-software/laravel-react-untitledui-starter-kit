@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
+import { Badge } from '@/components/base/badges/badges';
 import { Button } from '@/components/base/buttons/button';
 import { Checkbox } from '@/components/base/checkbox/checkbox';
 import { Input } from '@/components/base/input/input';
@@ -16,7 +17,9 @@ export type UserFormUser = {
 };
 
 type UserFormProps = {
-    /** The roles the current user can assign. */
+    /** Only an admin assigns roles; anyone else sees them read-only. */
+    canAssignRoles: boolean;
+    /** The roles to choose from (empty when the current user can't assign roles). */
     roles: string[];
     /** Roles that stay assigned and can't be unticked (an admin editing themselves). */
     lockedRoles?: string[];
@@ -33,6 +36,7 @@ type UserFormValues = {
 };
 
 const UserForm = ({
+    canAssignRoles,
     roles,
     lockedRoles = [],
     passwordRules,
@@ -43,7 +47,8 @@ const UserForm = ({
         email: user?.email ?? '',
         password: '',
         password_confirmation: '',
-        roles: user?.roles ?? [],
+        // Without the right to assign roles, none are sent: the server keeps them as they are.
+        roles: canAssignRoles ? (user?.roles ?? []) : [],
     });
 
     const toggleRole = (role: string, isSelected: boolean): void => {
@@ -138,31 +143,53 @@ const UserForm = ({
                         Ruoli
                     </span>
                     <span className="text-sm text-tertiary">
-                        Scegli i ruoli assegnati a questo utente.
+                        {canAssignRoles
+                            ? 'Scegli i ruoli assegnati a questo utente.'
+                            : 'Solo un amministratore può cambiare i ruoli.'}
                     </span>
                 </legend>
 
                 <div className="flex flex-col gap-3 rounded-xl bg-primary p-4 shadow-xs ring-1 ring-secondary ring-inset">
-                    {roles.length > 0 ? (
-                        roles.map((role) => (
-                            <Checkbox
-                                key={role}
-                                isSelected={form.data.roles.includes(role)}
-                                isDisabled={lockedRoles.includes(role)}
-                                onChange={(isSelected) =>
-                                    toggleRole(role, isSelected)
-                                }
-                                label={roleLabel(role)}
-                                hint={
-                                    lockedRoles.includes(role)
-                                        ? 'Non puoi togliere questo ruolo a te stesso.'
-                                        : undefined
-                                }
-                            />
-                        ))
+                    {canAssignRoles ? (
+                        roles.length > 0 ? (
+                            roles.map((role) => (
+                                <Checkbox
+                                    key={role}
+                                    isSelected={form.data.roles.includes(role)}
+                                    isDisabled={lockedRoles.includes(role)}
+                                    onChange={(isSelected) =>
+                                        toggleRole(role, isSelected)
+                                    }
+                                    label={roleLabel(role)}
+                                    hint={
+                                        lockedRoles.includes(role)
+                                            ? 'Non puoi togliere questo ruolo a te stesso.'
+                                            : undefined
+                                    }
+                                />
+                            ))
+                        ) : (
+                            <p className="text-sm text-tertiary">
+                                Nessun ruolo disponibile.
+                            </p>
+                        )
+                    ) : user ? (
+                        user.roles.length > 0 ? (
+                            <div className="flex flex-wrap gap-1">
+                                {user.roles.map((role) => (
+                                    <Badge key={role} color="brand" size="sm">
+                                        {roleLabel(role)}
+                                    </Badge>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-tertiary">
+                                Nessun ruolo.
+                            </p>
+                        )
                     ) : (
                         <p className="text-sm text-tertiary">
-                            Nessun ruolo disponibile.
+                            Il nuovo utente avrà il ruolo {roleLabel('user')}.
                         </p>
                     )}
                 </div>

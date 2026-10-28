@@ -10,22 +10,22 @@ use Illuminate\Validation\Rule;
 trait RoleValidationRules
 {
     /**
-     * Get the validation rules for the roles assigned in the user form.
-     * Only an admin can assign the admin role.
+     * Get the validation rules for the roles in the user form.
+     * Only an admin assigns roles: for anyone else the field must be missing or empty.
      *
      * @return array<string, array<int, ValidationRule|array<mixed>|string>>
      */
     protected function roleRules(?User $actor): array
     {
-        $itemRules = ['string', Rule::exists('roles', 'name')];
-
         if (! $actor?->hasRole(Role::ADMIN)) {
-            $itemRules[] = Rule::notIn([Role::ADMIN]);
+            return [
+                'roles' => ['prohibited'],
+            ];
         }
 
         return [
-            'roles' => ['array'],
-            'roles.*' => $itemRules,
+            'roles' => ['present', 'array'],
+            'roles.*' => ['string', Rule::exists('roles', 'name')],
         ];
     }
 }

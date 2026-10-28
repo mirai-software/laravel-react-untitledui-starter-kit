@@ -5,11 +5,16 @@ import { dashboard } from '@/routes';
 import { create, index } from '@/routes/users';
 
 type CreateUserProps = {
+    canAssignRoles: boolean;
     roles: string[];
     passwordRules: string;
 };
 
-const CreateUser = ({ roles, passwordRules }: CreateUserProps) => (
+const CreateUser = ({
+    canAssignRoles,
+    roles,
+    passwordRules,
+}: CreateUserProps) => (
     <>
         <Head title="Nuovo utente" />
 
@@ -18,7 +23,11 @@ const CreateUser = ({ roles, passwordRules }: CreateUserProps) => (
                 title="Nuovo utente"
                 description="Crea un utente e assegna i suoi ruoli."
             />
-            <UserForm roles={roles} passwordRules={passwordRules} />
+            <UserForm
+                canAssignRoles={canAssignRoles}
+                roles={roles}
+                passwordRules={passwordRules}
+            />
         </div>
     </>
 );

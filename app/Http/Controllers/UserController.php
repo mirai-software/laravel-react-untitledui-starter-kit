@@ -35,7 +35,8 @@ class UserController extends Controller
 
         $users = User::query()
             ->withTrashed()
-            ->with('roles:id,name')
+            // The policies compare each user's permissions with the current user's.
+            ->with(['roles:id,name', 'roles.permissions:id,name', 'permissions:id,name'])
             ->orderBy('name')
             ->get(['id', 'name', 'email', 'deleted_at'])
             ->map(fn (User $user): array => [
@@ -66,13 +67,14 @@ class UserController extends Controller
         $this->authorize('create', User::class);
 
         return Inertia::render('users/create', [
-            'roles' => $this->assignableRoles($request),
+            ...$this->roleOptions($request),
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
         ]);
     }
 
     /**
-     * Store a new user with their roles, and send them the email verification link.
+     * Store a new user, and send them the email verification link. An admin chooses the roles;
+     * a user created by anyone else gets the `user` role.
      */
     #[Post('users', name: 'users.store')]
     public function store(StoreUserRequest $request): RedirectResponse
@@ -83,7 +85,7 @@ class UserController extends Controller
             'password' => $request->validated('password'),
         ]);
 
-        $user->syncRoles($request->validated('roles', []));
+        $user->syncRoles($this->canAssignRoles($request) ? $request->validated('roles') : [Role::USER]);
         $user->sendEmailVerificationNotification();
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Utente creato.')]);
@@ -108,7 +110,7 @@ class UserController extends Controller
                 'email' => $user->email,
                 'roles' => $user->roles->pluck('name'),
             ],
-            'roles' => $this->assignableRoles($request),
+            ...$this->roleOptions($request),
             // An admin can't remove the admin role from themselves (UpdateUserRequest).
             'lockedRoles' => $isEditingThemselves && $user->hasRole(Role::ADMIN) ? [Role::ADMIN] : [],
             'passwordRules' => Password::defaults()->toPasswordRulesString(),
@@ -138,7 +140,10 @@ class UserController extends Controller
         }
 
         $user->save();
-        $user->syncRoles($request->validated('roles', []));
+
+        if ($this->canAssignRoles($request)) {
+            $user->syncRoles($request->validated('roles'));
+        }
 
         if ($emailChanged) {
             $user->sendEmailVerificationNotification();
@@ -184,15 +189,25 @@ class UserController extends Controller
     }
 
     /**
-     * The role names the current user can assign in the user form: only an admin can assign the admin role.
-     *
-     * @return Collection<int, string>
+     * Only an admin assigns roles (RoleValidationRules).
      */
-    private function assignableRoles(Request $request): Collection
+    private function canAssignRoles(Request $request): bool
     {
-        return Role::query()
-            ->when(! $request->user()?->hasRole(Role::ADMIN), fn ($query) => $query->where('name', '!=', Role::ADMIN))
-            ->orderBy('name')
-            ->pluck('name');
+        return $request->user()?->hasRole(Role::ADMIN) ?? false;
+    }
+
+    /**
+     * The role props for the user form: whether the current user can assign roles, and the roles to choose from.
+     *
+     * @return array{canAssignRoles: bool, roles: Collection<int, string>}
+     */
+    private function roleOptions(Request $request): array
+    {
+        $canAssignRoles = $this->canAssignRoles($request);
+
+        return [
+            'canAssignRoles' => $canAssignRoles,
+            'roles' => $canAssignRoles ? Role::query()->orderBy('name')->pluck('name') : new Collection,
+        ];
     }
 }

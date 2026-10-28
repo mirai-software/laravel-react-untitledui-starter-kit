@@ -7,6 +7,7 @@ import { index } from '@/routes/users';
 
 type EditUserProps = {
     user: UserFormUser;
+    canAssignRoles: boolean;
     roles: string[];
     lockedRoles: string[];
     passwordRules: string;
@@ -14,6 +15,7 @@ type EditUserProps = {
 
 const EditUser = ({
     user,
+    canAssignRoles,
     roles,
     lockedRoles,
     passwordRules,
@@ -28,6 +30,7 @@ const EditUser = ({
             />
             <UserForm
                 user={user}
+                canAssignRoles={canAssignRoles}
                 roles={roles}
                 lockedRoles={lockedRoles}
                 passwordRules={passwordRules}
