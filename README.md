@@ -31,7 +31,7 @@ Tutto ciò che offre lo starter kit ufficiale resta: login, registrazione, reset
 
 Serve solo **Docker**: PHP, Composer e Node girano nei container di [Sail](https://laravel.com/docs/sail).
 
-1. Crea il repository del progetto da questo kit ("Use this template" su GitHub) e clonalo.
+1. Crea il repository del progetto da questo kit ("Use this template" su GitHub) e clonalo. Poi, se vuoi ricevere gli aggiornamenti del kit, collegalo (vedi [Collegare il progetto al kit](#collegare-il-progetto-al-kit)).
 2. Se hai già un altro progetto Sail avviato, le porte 80, 5173 e 5432 sono occupate: prima del passo successivo copia `.env.example` in `.env` e imposta (togliendo il `#`) `APP_PORT`, `VITE_PORT` e `FORWARD_DB_PORT`, con l'`APP_URL` corrispondente (es. `http://localhost:8080`: le passkey funzionano solo su quell'indirizzo).
 3. Nella cartella del progetto lancia:
 
@@ -52,6 +52,21 @@ Serve solo **Docker**: PHP, Composer e Node girano nei container di [Sail](https
 Chi si registra dal sito riceve il ruolo `user`. L'email di verifica non parte davvero (`MAIL_MAILER=log`): il link di verifica è nel log, da leggere con `vendor/bin/sail artisan pail` o in `storage/logs/laravel.log`. Per vedere le email in un'interfaccia web si può aggiungere Mailpit con `vendor/bin/sail artisan sail:add mailpit`.
 
 Se `install.sh` si ferma perché una porta è occupata, imposta le porte in `.env` come al passo 2 e rilancialo: riprende da dove si era fermato.
+
+### Collegare il progetto al kit
+
+"Use this template" crea il progetto con un solo commit, senza la storia del kit: così com'è, il progetto non può ricevere gli aggiornamenti del kit con un merge. Questi comandi, da lanciare una volta sola nella cartella del progetto, cercano la versione del kit con gli stessi file del primo commit del progetto e la segnano come già inclusa; non cambiano nessun file. Si possono lanciare anche più tardi, non solo subito dopo la creazione.
+
+```bash
+git remote add kit git@github.com:mirai-software/laravel-react-untitledui-starter-kit.git
+git fetch kit
+ROOT_TREE=$(git rev-parse "$(git rev-list --max-parents=0 HEAD)^{tree}")
+KIT_COMMIT=$(git log kit/main --format='%H %T' | awk -v t="$ROOT_TREE" '$2 == t { print $1; exit }')
+echo "Versione del kit: ${KIT_COMMIT:-non trovata}"
+[ -n "$KIT_COMMIT" ] && git merge -s ours --allow-unrelated-histories -m "Collega il progetto allo starter kit" "$KIT_COMMIT"
+```
+
+Se la versione non viene trovata (per esempio perché il progetto è stato creato a mano), prendi l'ultimo commit del kit prima della creazione del progetto, mettendo data e ora al posto di quelle d'esempio, e rilancia l'ultima riga: `KIT_COMMIT=$(git log kit/main --before="2026-11-03 18:00" -1 --format=%H)`. Da quel momento il progetto si aggiorna con `git merge kit/main` (vedi [Aggiornamenti](#aggiornamenti)).
 
 ### Da personalizzare in ogni progetto
 
@@ -88,10 +103,12 @@ I percorsi senza cartella sono in `resources/js/`. Se togli sia la 2FA sia le pa
 
 ## Sviluppo quotidiano
 
+Avvia i container, poi Vite con il ricaricamento automatico; a fine giornata ferma i container:
+
 ```bash
-vendor/bin/sail up -d          # avvia i container
-vendor/bin/sail npm run dev    # Vite con ricaricamento automatico
-vendor/bin/sail stop           # ferma i container
+vendor/bin/sail up -d
+vendor/bin/sail npm run dev
+vendor/bin/sail stop
 ```
 
 Tutti i comandi PHP, Artisan, Composer e Node passano da `vendor/bin/sail`.
@@ -101,19 +118,36 @@ Tutti i comandi PHP, Artisan, Composer e Node passano da `vendor/bin/sail`.
 Prima di ogni commit (le stesse verifiche che esegue la CI su GitHub, `composer ci:check`):
 
 ```bash
-vendor/bin/sail composer test        # Pint, PHPStan e test
-vendor/bin/sail npm run check        # formattazione e lint (Vite+)
-vendor/bin/sail npm run types:check  # TypeScript
+vendor/bin/sail composer test
+vendor/bin/sail npm run check
+vendor/bin/sail npm run types:check
 ```
+
+Il primo esegue Pint, PHPStan e i test; il secondo formattazione e lint (Vite+); il terzo il controllo dei tipi TypeScript.
 
 Le convenzioni del team (componenti come arrow function, niente `any`, rotte via Wayfinder, permessi, rotte come attributi solo sui nostri controller, ecc.) sono in [`AGENTS.md`](AGENTS.md), che è anche il file letto da Claude Code (tramite `CLAUDE.md`).
 
-## Restare aggiornati con lo starter kit ufficiale
+## Aggiornamenti
 
-Il kit è collegato alla storia git dello starter kit ufficiale, quindi gli aggiornamenti di Laravel si integrano con un merge:
+Le dipendenze (Laravel, Inertia, React, Untitled UI…) si aggiornano in ogni progetto con `vendor/bin/sail composer update` e `vendor/bin/sail npm update`. Gli aggiornamenti qui sotto riguardano invece il codice copiato nel progetto: pagine, componenti, ruoli e utenti, configurazione.
+
+### In un progetto: dal kit
+
+Il kit integra gli aggiornamenti dello starter kit ufficiale di Laravel, quindi un progetto collegato al kit (vedi [Collegare il progetto al kit](#collegare-il-progetto-al-kit)) li riceve tutti da lì, insieme alle correzioni del kit; non serve aggiungere anche lo starter kit ufficiale come remote.
 
 ```bash
-git remote add upstream https://github.com/laravel/react-starter-kit.git   # una volta sola
+git fetch kit
+git merge kit/main
+```
+
+Git applica solo le modifiche del kit successive alla versione da cui è nato il progetto (o all'ultimo merge). I file che il progetto ha cambiato negli stessi punti vanno in conflitto: lì si sceglie a mano. Dopo il merge valgono le stesse regole del kit qui sotto (lock, verifiche, giro nel browser). Più il progetto si allontana dal kit, più i merge diventano impegnativi: conviene farli spesso nei primi mesi, e poi soprattutto per correzioni mirate.
+
+### Nel repository del kit: dallo starter kit ufficiale
+
+Il kit è collegato alla storia git dello starter kit ufficiale, quindi gli aggiornamenti di Laravel si integrano con un merge (il `git remote add` serve una volta sola):
+
+```bash
+git remote add upstream https://github.com/laravel/react-starter-kit.git
 git fetch upstream
 git merge upstream/main
 ```
@@ -135,12 +169,14 @@ I componenti in `resources/js/components/{base,application,foundations}` e `reso
 
 ```bash
 vendor/bin/sail npx -y untitledui@latest add <componente> -t base -p resources/js/components --lib-version 8 --yes
-# -t application per i componenti "application"; -o per sovrascrivere (aggiornare)
+```
 
-# la CLI non conosce la struttura di Laravel: sistema dove mette helper, hook e import
+Per i componenti "application" usa `-t application`; per aggiornare un componente già presente aggiungi `-o` (sovrascrive). La CLI non conosce la struttura di Laravel: dopo `add`, sposta helper e hook nelle cartelle giuste e correggi gli import (su Linux `sed -i` invece di `sed -i ''`):
+
+```bash
 mkdir -p resources/js/utils && [ -d utils ] && mv utils/* resources/js/utils/ && rmdir utils
 [ -d hooks ] && mv hooks/* resources/js/hooks/ && rmdir hooks
-grep -rl "@/resources/js/" resources/js | xargs sed -i '' 's#@/resources/js/#@/#g'   # macOS; su Linux: sed -i
+grep -rl "@/resources/js/" resources/js | xargs sed -i '' 's#@/resources/js/#@/#g'
 ```
 
 La CLI aggiunge anche i file vicini e tutto ciò che importano (per esempio `add input` riporta tutte le varianti di input e decine di icone di pagamento) e può reinstallare pacchetti npm. Dopo `add`, guarda `git status` e `git diff package.json`: tieni solo i file che il nostro codice importa, direttamente o tramite altri file tenuti, e togli il resto; `vendor/bin/sail npm run types:check` e `vendor/bin/sail npm run build` segnalano se hai tolto troppo. Se la CLI aggiunge un hook in `resources/js/hooks/`, aggiungilo anche alle esclusioni di Vite+ in `vite.config.ts`. Non usare `untitledui init`: il tema è già configurato. `resources/css/theme.css` è quello di Untitled UI senza modifiche; i colori del brand stanno in `resources/css/app.css`.
