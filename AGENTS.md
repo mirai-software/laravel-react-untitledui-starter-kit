@@ -212,6 +212,8 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 
 # Convenzioni di progetto
 
+Valgono per il team e per Claude. Se una di queste regole è in conflitto con le linee guida di Boost qui sopra, vale questa.
+
 ## Frontend (React / TypeScript)
 
 - **Componenti come arrow function, sempre** — root, sub-componenti dei compound, helper privati e inline. Mai `function MyComponent() {}`. Vale per i file nostri e per quelli di upstream che riscriviamo; i file di upstream che non modifichiamo restano identici all'originale (es. `app-logo-icon.tsx`, `layouts/app-layout.tsx`), così i merge da upstream non vanno in conflitto.
@@ -224,8 +226,8 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - **Rotte tramite Wayfinder**: importare gli helper da `@/routes/...` (rotte con nome) o `@/actions/...` (controller). Non hardcodare i path; dopo modifiche alle rotte rigenerare con `vendor/bin/sail artisan wayfinder:generate --with-form`.
 - **Permessi lato client** tramite l'hook `usePermissions()` (permessi condivisi da `HandleInertiaRequests` in `auth.permissions`); non rileggere `auth.permissions` a mano.
 - **Pulsanti per riga nelle liste**: quando la risposta dipende dalla singola riga (es. "Modifica" non sugli admin, "Elimina" solo sulle fatture non pagate), il controller manda per ogni riga un oggetto `can` calcolato con la policy (`'can' => ['update' => $user->can('update', $riga), …]`) e la pagina mostra solo ciò che riceve, come in `UserController::index()` e `pages/users/index.tsx`. `can('…')` di `usePermissions()` resta per ciò che vale uguale ovunque: il pulsante "Nuovo" e le voci del menu. Così le regole stanno solo nella policy.
-- **Form con campi React Aria (Untitled UI)**: per svuotare i campi dopo l'invio usare il `form.reset()` nativo in `onError`/`onSuccess`; `resetOnError`/`resetOnSuccess` di Inertia non li svuotano.
-- **UI in italiano**: le stringhe rivolte all'utente vanno in italiano. I form hanno `noValidate`: la validazione la fa il server, con messaggi in italiano, invece dei popup del browser nella sua lingua.
+- **Svuotare i campi dopo l'invio**: con il `<Form>` di Inertia (campi non controllati) usare il `reset()` nativo dell'elemento form in `onError`/`onSuccess`, perché `resetOnError`/`resetOnSuccess` di Inertia non svuotano i campi React Aria di Untitled UI (esempio in `pages/settings/security.tsx`); con `useForm` (campi controllati, es. `components/users/user-form.tsx`) basta il suo `form.reset('password', …)`.
+- **UI in italiano**: le stringhe rivolte all'utente vanno in italiano. Un form con campi che il browser controlla da sé (email, URL, numeri con limiti) ha `noValidate`: così la validazione la fa il server, con messaggi in italiano, invece dei popup del browser nella sua lingua.
 
 ## Backend (PHP / Laravel)
 
