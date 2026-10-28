@@ -228,6 +228,7 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - **Ruoli protetti**: `admin` e `user` (`Role::PROTECTED`) non si rinominano né si eliminano, perché il codice li usa per nome.
 - **Amministratori**: si creano solo con `php artisan app:create-admin` (`app/Console/Commands/CreateAdmin.php`), che rende admin anche un utente esistente; chi si registra riceve sempre il ruolo `user` (`CreateNewUser`).
 - **Soft delete utenti**: `User` usa `SoftDeletes`. "Disattiva" = soft delete, reversibile con "Riattiva"; anche "Elimina account" nelle impostazioni disattiva soltanto.
+- **Modelli strict fuori produzione** ([nunomaduro/essentials](https://github.com/nunomaduro/essentials), `config/essentials.php`): le relazioni usate su una lista vanno caricate con `with()`, e una query con `get([...colonne])` deve selezionare tutte le colonne che poi si leggono. Nei test le chiamate HTTP esterne vanno simulate con `Http::fake()`.
 - **Test** in PHPUnit nello stile di upstream (metodi `test_*`, factory).
 
 ## Workflow

@@ -37,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
         $this->configureAuthorization();
         $this->configureErrorPages();
         $this->configurePasskeys();
+        $this->configureTesting();
     }
 
     /**
@@ -92,6 +93,15 @@ class AppServiceProvider extends ServiceProvider
     {
         Passkeys::usePasskeyModel(Passkey::class);
         Passkeys::authorizeLoginUsing(fn (Request $request, PasskeyUser $user): bool => ! ($user instanceof User && $user->trashed()));
+    }
+
+    /**
+     * Tests don't render pages on the server: with `npm run dev` running, that would call Vite
+     * over HTTP, which essentials' PreventStrayRequests blocks in tests.
+     */
+    protected function configureTesting(): void
+    {
+        Inertia::disableSsr($this->app->runningUnitTests());
     }
 
     /**
