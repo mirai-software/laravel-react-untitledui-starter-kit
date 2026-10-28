@@ -223,6 +223,7 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 - `vendor/bin/sail npm run check` fa rispettare `any`, `!` e le regole degli hook di React (configurate in `vite.config.ts`).
 - **Rotte tramite Wayfinder**: importare gli helper da `@/routes/...` (rotte con nome) o `@/actions/...` (controller). Non hardcodare i path; dopo modifiche alle rotte rigenerare con `vendor/bin/sail artisan wayfinder:generate --with-form`.
 - **Permessi lato client** tramite l'hook `usePermissions()` (permessi condivisi da `HandleInertiaRequests` in `auth.permissions`); non rileggere `auth.permissions` a mano.
+- **Pulsanti per riga nelle liste**: quando la risposta dipende dalla singola riga (es. "Modifica" non sugli admin, "Elimina" solo sulle fatture non pagate), il controller manda per ogni riga un oggetto `can` calcolato con la policy (`'can' => ['update' => $user->can('update', $riga), …]`) e la pagina mostra solo ciò che riceve, come in `UserController::index()` e `pages/users/index.tsx`. `can('…')` di `usePermissions()` resta per ciò che vale uguale ovunque: il pulsante "Nuovo" e le voci del menu. Così le regole stanno solo nella policy.
 - **Form con campi React Aria (Untitled UI)**: per svuotare i campi dopo l'invio usare il `form.reset()` nativo in `onError`/`onSuccess`; `resetOnError`/`resetOnSuccess` di Inertia non li svuotano.
 - **UI in italiano**: le stringhe rivolte all'utente vanno in italiano. I form hanno `noValidate`: la validazione la fa il server, con messaggi in italiano, invece dei popup del browser nella sua lingua.
 
