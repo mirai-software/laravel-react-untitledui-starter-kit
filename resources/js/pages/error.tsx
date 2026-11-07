@@ -6,6 +6,8 @@ import { dashboard, home } from '@/routes';
 
 type ErrorPageProps = {
     status: number;
+    /** Why the app refused, in Italian; null shows the status's generic description. */
+    message: string | null;
 };
 
 const messages: Record<number, { title: string; description: string }> = {
@@ -16,6 +18,16 @@ const messages: Record<number, { title: string; description: string }> = {
     404: {
         title: 'Pagina non trovata',
         description: 'La pagina che cerchi non esiste o è stata spostata.',
+    },
+    405: {
+        title: 'Azione non consentita',
+        description:
+            'Questo indirizzo non si può aprire così. Riapri la pagina dal menu.',
+    },
+    413: {
+        title: 'File troppo grande',
+        description:
+            'Il file supera il limite del server. Riprova con un file più piccolo.',
     },
     429: {
         title: 'Troppe richieste',
@@ -33,7 +45,7 @@ const messages: Record<number, { title: string; description: string }> = {
 };
 
 /** Rendered by `configureErrorPages()` in `AppServiceProvider` when debug is off. */
-const ErrorPage = ({ status }: ErrorPageProps) => {
+const ErrorPage = ({ status, message }: ErrorPageProps) => {
     const { title, description } = messages[status] ?? messages[500];
     const { auth } = usePage().props;
     const homeUrl = auth.user ? dashboard().url : home().url;
@@ -62,7 +74,7 @@ const ErrorPage = ({ status }: ErrorPageProps) => {
                     {title}
                 </h1>
                 <p className="mt-4 max-w-md text-lg text-tertiary md:text-xl">
-                    {description}
+                    {message ?? description}
                 </p>
                 <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row">
                     <Button

@@ -17,6 +17,8 @@ use Inertia\Inertia;
 use Laravel\Passkeys\Contracts\PasskeyUser;
 use Laravel\Passkeys\Passkeys;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Throwable;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -52,13 +54,15 @@ class AppServiceProvider extends ServiceProvider
      * Render HTTP errors with the Inertia error page (resources/js/pages/error.tsx).
      *
      * - JSON requests (e.g. the passkey library's calls) keep Laravel's JSON errors.
-     * - An expired page (419) goes back with a toast, so the user doesn't lose the form.
+     * - An expired page (419), or an action refused from a list row or a form (a 403 that isn't a GET),
+     *   goes back with a toast, so the user keeps the list's filters or the form.
      * - With debug on, Laravel's detailed error page is kept for the other errors.
      */
     protected function configureErrorPages(): void
     {
         Inertia::handleExceptionsUsing(function (ExceptionResponse $response): ?SymfonyResponse {
             $request = $response->request;
+            $explanation = $this->errorExplanation($response->exception);
 
             if ($request->expectsJson() && ! $request->hasHeader('X-Inertia')) {
                 return null;
@@ -70,7 +74,13 @@ class AppServiceProvider extends ServiceProvider
                 return back();
             }
 
-            if (config('app.debug') || ! in_array($response->statusCode(), [403, 404, 429, 500, 503], true)) {
+            if ($response->statusCode() === 403 && $request->hasHeader('X-Inertia') && ! $request->isMethod('GET')) {
+                Inertia::flash('toast', ['type' => 'error', 'message' => $explanation ?? __('Non hai i permessi per questa azione.')]);
+
+                return back();
+            }
+
+            if (config('app.debug') || ! in_array($response->statusCode(), [403, 404, 405, 413, 429, 500, 503], true)) {
                 return null;
             }
 
@@ -78,12 +88,24 @@ class AppServiceProvider extends ServiceProvider
             // (e.g. the database is down), fall back to Laravel's plain error response.
             return rescue(
                 fn (): SymfonyResponse => $response
-                    ->render('error', ['status' => $response->statusCode()])
+                    ->render('error', ['status' => $response->statusCode(), 'message' => $explanation])
                     ->withSharedData()
                     ->toResponse($request),
                 $response->response,
             );
         });
+    }
+
+    /**
+     * The message of an abort() that has one, e.g. abort_if(…, 403, __('…')): ours, in Italian. Null for
+     * any other exception: Laravel's and the packages' messages are in English ("This action is
+     * unauthorized.", spatie's permission middleware) and may name classes ("No query results for model …").
+     */
+    private function errorExplanation(Throwable $exception): ?string
+    {
+        $isAbort = $exception::class === HttpException::class && $exception->getPrevious() === null;
+
+        return $isAbort && $exception->getMessage() !== '' ? $exception->getMessage() : null;
     }
 
     /**
