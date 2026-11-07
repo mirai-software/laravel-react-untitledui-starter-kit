@@ -11,6 +11,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\password;
@@ -31,7 +32,8 @@ class CreateAdmin extends Command
      */
     public function handle(): int
     {
-        $email = $this->stringOption('email') ?? text(label: 'Email', required: true);
+        // Lowercase, as the app saves emails and Fortify looks them up.
+        $email = Str::lower($this->stringOption('email') ?? text(label: 'Email', required: true));
 
         $existing = User::withTrashed()->where('email', $email)->first();
 

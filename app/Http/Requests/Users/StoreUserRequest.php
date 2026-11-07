@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Users;
 
+use App\Concerns\NormalizesEmail;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use App\Concerns\RoleValidationRules;
@@ -11,7 +12,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreUserRequest extends FormRequest
 {
-    use PasswordValidationRules, ProfileValidationRules, RoleValidationRules;
+    use NormalizesEmail, PasswordValidationRules, ProfileValidationRules, RoleValidationRules;
 
     /**
      * Determine if the user is authorized to make this request.
@@ -19,6 +20,14 @@ class StoreUserRequest extends FormRequest
     public function authorize(): bool
     {
         return $this->user()?->can('create', User::class) ?? false;
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->normalizeEmail();
     }
 
     /**

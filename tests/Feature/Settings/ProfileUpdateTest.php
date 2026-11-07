@@ -61,6 +61,24 @@ class ProfileUpdateTest extends TestCase
         $this->assertNotNull($user->refresh()->email_verified_at);
     }
 
+    public function test_the_email_is_saved_lowercase()
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch(route('profile.update'), [
+                'name' => $user->name,
+                'email' => 'Test@Example.com',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('profile.edit'));
+
+        $this->assertSame('test@example.com', $user->refresh()->email);
+    }
+
     public function test_user_can_delete_their_account()
     {
         $user = User::factory()->create();

@@ -48,6 +48,30 @@ class CreateAdminCommandTest extends TestCase
         $this->assertDatabaseCount('users', 0);
     }
 
+    public function test_it_saves_the_email_lowercase_so_the_admin_can_log_in()
+    {
+        $this->artisan('app:create-admin', ['--email' => 'Capo@Example.com', '--name' => 'Capo'])
+            ->expectsQuestion('Password', 'una-password-sicura')
+            ->expectsQuestion('Conferma la password', 'una-password-sicura')
+            ->assertSuccessful();
+
+        $admin = User::where('email', 'capo@example.com')->firstOrFail();
+        $this->post(route('login.store'), ['email' => 'Capo@Example.com', 'password' => 'una-password-sicura']);
+        $this->assertAuthenticatedAs($admin);
+    }
+
+    public function test_it_finds_an_existing_user_whatever_the_case_of_the_email()
+    {
+        $user = User::factory()->create(['email' => 'mario@example.com']);
+
+        $this->artisan('app:create-admin', ['--email' => 'Mario@Example.com'])
+            ->expectsConfirmation("Esiste già {$user->name} (mario@example.com). Vuoi renderlo amministratore?", 'yes')
+            ->assertSuccessful();
+
+        $this->assertTrue($user->fresh()?->hasRole(Role::ADMIN));
+        $this->assertDatabaseCount('users', 1);
+    }
+
     public function test_it_makes_an_existing_user_admin_after_confirming()
     {
         $user = User::factory()->create();
