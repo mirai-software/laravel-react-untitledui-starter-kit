@@ -106,4 +106,30 @@ class CreateAdminCommandTest extends TestCase
         $this->assertNotSoftDeleted($user);
         $this->assertTrue($user->fresh()?->hasRole(Role::ADMIN));
     }
+
+    public function test_it_verifies_the_email_of_an_existing_user_it_makes_admin()
+    {
+        $user = User::factory()->unverified()->create();
+
+        $this->artisan('app:create-admin', ['--email' => $user->email])
+            ->expectsConfirmation("Esiste già {$user->name} ({$user->email}). Vuoi renderlo amministratore?", 'yes')
+            ->assertSuccessful();
+
+        $this->assertTrue($user->fresh()?->hasRole(Role::ADMIN));
+        $this->assertTrue($user->fresh()?->hasVerifiedEmail());
+        $this->post(route('login.store'), ['email' => $user->email, 'password' => 'password']);
+        $this->get(route('dashboard'))->assertOk();
+    }
+
+    public function test_it_verifies_the_email_of_an_unverified_admin()
+    {
+        $admin = User::factory()->unverified()->create()->assignRole(Role::findOrCreate(Role::ADMIN));
+
+        $this->artisan('app:create-admin', ['--email' => $admin->email])
+            ->assertSuccessful();
+
+        $this->assertTrue($admin->fresh()?->hasVerifiedEmail());
+        $this->post(route('login.store'), ['email' => $admin->email, 'password' => 'password']);
+        $this->get(route('dashboard'))->assertOk();
+    }
 }
