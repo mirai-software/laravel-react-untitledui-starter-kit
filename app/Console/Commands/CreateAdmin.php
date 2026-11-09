@@ -11,6 +11,7 @@ use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\password;
@@ -18,7 +19,8 @@ use function Laravel\Prompts\text;
 
 /**
  * The way to get an admin: registering never makes one. It creates a new admin (already verified),
- * or makes an existing user admin, reactivating them if they were deactivated.
+ * or makes an existing user admin, reactivating them if they were deactivated and verifying their
+ * email, so they aren't stuck on the verification screen.
  */
 #[Signature('app:create-admin {--email= : L\'email dell\'amministratore} {--name= : Il nome, se l\'utente è nuovo}')]
 #[Description('Crea un amministratore, o rende amministratore un utente esistente')]
@@ -31,7 +33,8 @@ class CreateAdmin extends Command
      */
     public function handle(): int
     {
-        $email = $this->stringOption('email') ?? text(label: 'Email', required: true);
+        // Lowercase, as the app saves emails and Fortify looks them up.
+        $email = Str::lower($this->stringOption('email') ?? text(label: 'Email', required: true));
 
         $existing = User::withTrashed()->where('email', $email)->first();
 
@@ -82,12 +85,17 @@ class CreateAdmin extends Command
     }
 
     /**
-     * Make an existing user admin, reactivating them if they were deactivated.
+     * Make an existing user admin, reactivating them if they were deactivated and verifying their email.
      */
     private function promote(User $user): int
     {
         if (! $user->trashed() && $user->hasRole(Role::ADMIN)) {
-            $this->components->info("{$user->email} è già amministratore.");
+            if ($user->hasVerifiedEmail()) {
+                $this->components->info("{$user->email} è già amministratore.");
+            } else {
+                $user->markEmailAsVerified();
+                $this->components->info("{$user->email} è già amministratore: la sua email ora è verificata.");
+            }
 
             return self::SUCCESS;
         }
@@ -107,6 +115,10 @@ class CreateAdmin extends Command
         }
 
         $user->assignRole(Role::ADMIN);
+
+        if (! $user->hasVerifiedEmail()) {
+            $user->markEmailAsVerified();
+        }
 
         $this->components->info("{$user->email} ora è amministratore.");
 

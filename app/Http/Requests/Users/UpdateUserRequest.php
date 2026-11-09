@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Users;
 
+use App\Concerns\NormalizesEmail;
 use App\Concerns\ProfileValidationRules;
 use App\Concerns\RoleValidationRules;
 use App\Models\Role;
@@ -14,7 +15,7 @@ use Illuminate\Validation\Validator;
 
 class UpdateUserRequest extends FormRequest
 {
-    use ProfileValidationRules, RoleValidationRules;
+    use NormalizesEmail, ProfileValidationRules, RoleValidationRules;
 
     /**
      * Determine if the user is authorized to make this request.
@@ -24,6 +25,14 @@ class UpdateUserRequest extends FormRequest
         $user = $this->route('user');
 
         return $user instanceof User && ($this->user()?->can('update', $user) ?? false);
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->normalizeEmail();
     }
 
     /**

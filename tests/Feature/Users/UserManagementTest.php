@@ -5,8 +5,10 @@ namespace Tests\Feature\Users;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Inertia\Testing\AssertableInertia;
@@ -234,6 +236,36 @@ class UserManagementTest extends TestCase
         $response->assertSessionHasErrors('email');
     }
 
+    public function test_emails_are_saved_lowercase_so_login_and_password_reset_accept_any_case()
+    {
+        Notification::fake();
+        $this->actingAs($this->userWith('users.create'))
+            ->post(route('users.store'), $this->validPayload(['email' => 'Mario.Rossi@Nexus.it']))
+            ->assertRedirect(route('users.index'));
+        Auth::logout();
+
+        $created = User::where('email', 'mario.rossi@nexus.it')->firstOrFail();
+
+        if (Features::enabled(Features::resetPasswords())) {
+            $this->post(route('password.email'), ['email' => 'MARIO.ROSSI@nexus.it']);
+            Notification::assertSentTo($created, ResetPassword::class);
+        }
+
+        $this->post(route('login.store'), ['email' => 'Mario.Rossi@NEXUS.it', 'password' => 'secret-password']);
+        $this->assertAuthenticatedAs($created);
+    }
+
+    public function test_emails_differing_only_in_case_are_rejected_as_taken()
+    {
+        User::factory()->create(['email' => 'mario.rossi@nexus.it']);
+
+        $response = $this->actingAs($this->userWith('users.create'))
+            ->post(route('users.store'), $this->validPayload(['email' => 'Mario.Rossi@nexus.it']));
+
+        $response->assertSessionHasErrors('email');
+        $this->assertDatabaseCount('users', 2);
+    }
+
     public function test_users_can_be_updated_keeping_their_password_and_roles()
     {
         Notification::fake();
@@ -274,6 +306,21 @@ class UserManagementTest extends TestCase
         if (Features::enabled(Features::emailVerification())) {
             Notification::assertSentTo($target, VerifyEmail::class);
         }
+    }
+
+    public function test_an_updated_email_is_saved_lowercase()
+    {
+        Notification::fake();
+        $target = User::factory()->create();
+
+        $response = $this->actingAs($this->userWith('users.update'))->put(route('users.update', $target), [
+            'name' => $target->name,
+            'email' => 'Nuova.Email@Example.com',
+            'roles' => [],
+        ]);
+
+        $response->assertRedirect(route('users.index'));
+        $this->assertSame('nuova.email@example.com', $target->refresh()->email);
     }
 
     public function test_the_password_changes_when_filled_in()
